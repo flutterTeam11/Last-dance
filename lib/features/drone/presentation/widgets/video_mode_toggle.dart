@@ -16,25 +16,27 @@ class VideoModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.all(4.w),
-      decoration: BoxDecoration(
-        color: AppTheme.reportCardBg,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           _buildToggleItem(
             label: 'Normal',
             mode: VideoMode.normal,
             isActive: currentMode == VideoMode.normal,
           ),
+          SizedBox(width: 12.w),
           _buildToggleItem(
             label: 'Thermal',
             mode: VideoMode.thermal,
             isActive: currentMode == VideoMode.thermal,
+          ),
+          SizedBox(width: 12.w),
+          _buildToggleItem(
+            label: 'Overlay',
+            mode: VideoMode.overlay,
+            isActive: currentMode == VideoMode.overlay,
           ),
         ],
       ),
@@ -49,28 +51,43 @@ class VideoModeToggle extends StatelessWidget {
     return GestureDetector(
       onTap: () => onModeChanged(mode),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
         curve: Curves.easeInOut,
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
         decoration: BoxDecoration(
+          color: isActive ? null : Colors.white,
           gradient: isActive ? AppTheme.primaryGradient : null,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(24.r),
+          border: isActive
+              ? null
+              : Border.all(
+                  color: Colors.grey.shade300,
+                  width: 1,
+                ),
           boxShadow: isActive
               ? [
                   BoxShadow(
                     color: AppTheme.brandCyan.withValues(alpha: 0.3),
                     blurRadius: 8.r,
-                    offset: Offset(0, 2.h),
+                    offset: Offset(0, 3.h),
                   ),
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 4.r,
+                    offset: Offset(0, 1.h),
+                  ),
+                ],
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w600,
-            color: isActive ? Colors.white : AppTheme.textSecondary,
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: isActive ? Colors.white : Colors.black87,
+            ),
           ),
         ),
       ),

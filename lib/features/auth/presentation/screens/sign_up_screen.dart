@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -64,8 +66,10 @@ class _SignUpViewState extends State<_SignUpView> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthFailureState) {
+          log("Failed to sign up: ${state.message}");
           showSnakBar(context, state.message, isError: true);
         } else if (state is OtpSent) {
+          log('account created successfully');
           context.push('/sign-in');
         }
       },

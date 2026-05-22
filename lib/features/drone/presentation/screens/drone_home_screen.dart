@@ -18,7 +18,9 @@ import '../widgets/video_mode_toggle.dart';
 import '../widgets/video_preview_card.dart';
 
 class DroneHomeScreen extends StatelessWidget {
-  const DroneHomeScreen({super.key});
+  final VoidCallback? onMapTap;
+
+  const DroneHomeScreen({super.key, this.onMapTap});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +75,7 @@ class DroneHomeScreen extends StatelessWidget {
         return Column(
           children: [
             VideoPreviewCard(
-              isThermalMode: videoState.mode == VideoMode.thermal,
+              mode: videoState.mode,
               onTap: () => context.push('/fullscreen-video'),
             ),
             SizedBox(height: 12.h),
@@ -101,7 +103,7 @@ class DroneHomeScreen extends StatelessWidget {
         final status = state is DroneStatusLoaded
             ? state.status
             : const DroneStatus.initial();
-        return DroneStatusCard(status: status);
+        return DroneStatusCard(status: status, onMapTap: onMapTap);
       },
     );
   }
@@ -141,7 +143,9 @@ class DroneHomeScreen extends StatelessWidget {
               return true;
             },
             builder: (context, state) {
-              final reports = state is DroneStatusLoaded ? state.reports : <DroneReport>[];
+              final reports = state is DroneStatusLoaded
+                  ? state.reports
+                  : <DroneReport>[];
 
               if (reports.isEmpty) {
                 return _buildEmptyReports();
@@ -180,10 +184,7 @@ class DroneHomeScreen extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               'No reports yet',
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: AppTheme.textSecondary,
-              ),
+              style: TextStyle(fontSize: 13.sp, color: AppTheme.textSecondary),
             ),
           ],
         ),

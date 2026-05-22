@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -54,8 +56,10 @@ class _SignInViewState extends State<_SignInView> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthFailureState) {
+          log("Failed to sign in: ${state.message}");
           showSnakBar(context, state.message, isError: true);
         } else if (state is AuthSuccess) {
+          log("Signed in successfully: ${state.message}");
           showSnakBar(context, state.message);
           context.go('/home');
         }

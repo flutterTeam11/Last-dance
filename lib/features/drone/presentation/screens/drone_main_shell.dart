@@ -23,10 +23,7 @@ class _DroneMainShellState extends State<DroneMainShell> {
   late final DroneStatusCubit _statusCubit;
   late final VideoFeedCubit _videoFeedCubit;
 
-  final List<Widget> _screens = const [
-    DroneHomeScreen(),
-    DroneMapScreen(),
-  ];
+  late final List<Widget> _screens;
 
   @override
   void initState() {
@@ -37,6 +34,17 @@ class _DroneMainShellState extends State<DroneMainShell> {
 
     _statusCubit.startListening();
     _trackingCubit.startTracking();
+
+    _screens = [
+      DroneHomeScreen(
+        onMapTap: () {
+          setState(() {
+            _currentIndex = 1;
+          });
+        },
+      ),
+      const DroneMapScreen(),
+    ];
   }
 
   @override

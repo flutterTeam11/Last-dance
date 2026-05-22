@@ -11,6 +11,7 @@ import '../cubit/drone_status_state.dart';
 import '../cubit/video_feed_cubit.dart';
 import '../cubit/video_feed_state.dart';
 import '../widgets/drone_stats_bar.dart';
+import '../widgets/video_preview_card.dart';
 import '../widgets/virtual_joystick.dart';
 
 class DroneFullscreenVideoScreen extends StatefulWidget {
@@ -70,41 +71,52 @@ class _DroneFullscreenVideoScreenState
   Widget _buildVideoBackground() {
     return BlocBuilder<VideoFeedCubit, VideoFeedState>(
       builder: (context, state) {
-        return ColorFiltered(
-          colorFilter: state.mode == VideoMode.thermal
-              ? const ColorFilter.matrix(<double>[
-                  0.5, 0.5, 0.5, 0, 0,
-                  0.1, 0.1, 0.1, 0, 0,
-                  -0.2, -0.2, -0.2, 0, 0,
-                  0, 0, 0, 1, 0,
-                ])
-              : const ColorFilter.mode(
-                  Colors.transparent,
-                  BlendMode.multiply,
-                ),
-          child: Container(
-            color: AppTheme.darkBackground,
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.videocam_outlined,
-                    size: 60.w,
-                    color: Colors.white24,
-                  ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    'Live Feed',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: Colors.white24,
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            ColorFiltered(
+              colorFilter: state.mode == VideoMode.thermal
+                  ? const ColorFilter.matrix(<double>[
+                      0.5, 0.5, 0.5, 0, 0,
+                      0.1, 0.1, 0.1, 0, 0,
+                      -0.2, -0.2, -0.2, 0, 0,
+                      0, 0, 0, 1, 0,
+                    ])
+                  : const ColorFilter.mode(
+                      Colors.transparent,
+                      BlendMode.multiply,
                     ),
+              child: Container(
+                color: AppTheme.darkBackground,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        state.mode == VideoMode.thermal
+                            ? Icons.thermostat
+                            : (state.mode == VideoMode.overlay ? Icons.hub : Icons.videocam_outlined),
+                        size: 60.w,
+                        color: Colors.white24,
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        state.mode == VideoMode.thermal
+                            ? 'Thermal Feed'
+                            : (state.mode == VideoMode.overlay ? 'AI Telemetry Feed' : 'Live Feed'),
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: Colors.white24,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+            if (state.mode == VideoMode.overlay)
+              const AIDetectionOverlay(),
+          ],
         );
       },
     );

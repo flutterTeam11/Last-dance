@@ -9,6 +9,15 @@ class AuthCubit extends Cubit<AuthState> {
 
   AuthCubit({required this._authRepository}) : super(AuthInitial());
 
+  Future<void> checkAuthStatus() async {
+    final isLoggedIn = await _authRepository.isLoggedIn();
+    if (isLoggedIn) {
+      emit(AuthSuccess(message: ''));
+    } else {
+      emit(AuthInitial());
+    }
+  }
+
   Future<void> signUp({required String email, required String password}) async {
     emit(AuthLoading());
     final result = await _authRepository.signUp(
@@ -29,7 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
     );
     result.fold(
       (failure) => emit(AuthFailureState(message: failure.errMessage)),
-      (_) => emit(AuthSuccess(message: 'Welcome back!')),
+      (_) => emit(const AuthSuccess(message: 'Welcome back!')),
     );
   }
 
@@ -38,7 +47,7 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await _authRepository.signInWithGoogle();
     result.fold(
       (failure) => emit(AuthFailureState(message: failure.errMessage)),
-      (_) => emit(AuthSuccess(message: 'Welcome!')),
+      (_) => emit(const AuthSuccess(message: 'Welcome!')),
     );
   }
 

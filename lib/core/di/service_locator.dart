@@ -12,10 +12,16 @@ import '../../features/drone/presentation/cubit/drone_status_cubit.dart';
 import '../../features/drone/presentation/cubit/drone_tracking_cubit.dart';
 import '../../features/drone/presentation/cubit/video_feed_cubit.dart';
 import '../../features/onboarding/cubit/onboarding_cubit.dart';
+import '../utils/local_storage_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
 void setupServiceLocator() {
+  // Core
+  getIt.registerLazySingleton<LocalStorageService>(
+    () => LocalStorageService(),
+  );
+
   // Firebase
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   getIt.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn());
@@ -28,6 +34,8 @@ void setupServiceLocator() {
     () => AuthRepositoryImpl(
       firebaseAuth: getIt<FirebaseAuth>(),
       googleSignIn: getIt<GoogleSignIn>(),
+      firestore: getIt<FirebaseFirestore>(),
+      localStorage: getIt<LocalStorageService>(),
     ),
   );
   getIt.registerLazySingleton<DroneRepository>(

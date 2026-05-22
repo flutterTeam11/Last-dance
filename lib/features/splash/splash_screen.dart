@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/di/service_locator.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/svg_asset_image.dart';
+import '../auth/presentation/cubit/auth_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,13 +22,26 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _scheduleOnboardingNavigation();
+    _checkAuthAndNavigate();
   }
 
   @override
   void dispose() {
     _navigationTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    final cubit = getIt<AuthCubit>();
+    await cubit.checkAuthStatus();
+    if (!mounted) return;
+
+    final state = cubit.state;
+    if (state is AuthSuccess) {
+      context.go('/home', extra: true);
+    } else {
+      _scheduleOnboardingNavigation();
+    }
   }
 
   void _scheduleOnboardingNavigation() {

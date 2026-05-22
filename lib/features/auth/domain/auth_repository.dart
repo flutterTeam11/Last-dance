@@ -22,4 +22,8 @@ abstract class AuthRepository {
     required String code,
     required String newPassword,
   });
+
+  Future<Either<AuthFailure, void>> ensureUserDocExists();
+
+  Future<bool> isLoggedIn();
 }

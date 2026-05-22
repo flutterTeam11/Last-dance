@@ -11,9 +11,16 @@ class DroneTrackingCubit extends Cubit<DroneTrackingState> {
   StreamSubscription<DroneLocation>? _locationSubscription;
   final List<DroneLocation> _pathHistory = [];
   Timer? _disconnectTimer;
+  final _centerOnUserController = StreamController<void>.broadcast();
+
+  Stream<void> get centerOnUserStream => _centerOnUserController.stream;
 
   DroneTrackingCubit({required this._repository})
       : super(const DroneTrackingInitial());
+
+  void triggerCenterOnUser() {
+    _centerOnUserController.add(null);
+  }
 
   void startTracking() {
     emit(const DroneTrackingLoading());
@@ -67,6 +74,7 @@ class DroneTrackingCubit extends Cubit<DroneTrackingState> {
   Future<void> close() {
     _locationSubscription?.cancel();
     _disconnectTimer?.cancel();
+    _centerOnUserController.close();
     return super.close();
   }
 }

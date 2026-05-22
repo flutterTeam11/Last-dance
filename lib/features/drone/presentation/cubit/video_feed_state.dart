@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum VideoMode { normal, thermal }
+enum VideoMode { normal, thermal, overlay }
 
 class VideoFeedState extends Equatable {
   final VideoMode mode;
