@@ -119,14 +119,14 @@ class _SignInViewState extends State<_SignInView> {
                   const _OrDivider(),
                   SizedBox(height: 16.h),
                   SocialSignInButton(
-                    assetPath: 'assets/icons/google.png',
+                    assetPath: 'assets/icons/google.svg',
                     label: 'Continue with Google',
                     onPressed: () =>
                         context.read<AuthCubit>().signInWithGoogle(),
                   ),
                   SizedBox(height: 12.h),
                   SocialSignInButton(
-                    assetPath: 'assets/icons/apple.png',
+                    assetPath: 'assets/icons/apple.svg',
                     label: 'Continue with Apple',
                     onPressed: () {},
                   ),

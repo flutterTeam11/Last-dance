@@ -216,7 +216,7 @@ class _BottomControls extends StatelessWidget {
         children: [
           TextButton(
             onPressed: () {
-              context.go('/home');
+              context.go('/sign-in');
             },
             child: Text(
               'skip',
@@ -236,7 +236,7 @@ class _BottomControls extends StatelessWidget {
                 width: isLastPage ? 116 : 94,
                 onPressed: () {
                   if (isLastPage) {
-                    context.go('/home');
+                    context.go('/sign-in');
                   } else {
                     final nextPage = state.currentPage + 1;
                     context.read<OnboardingCubit>().nextPage(
