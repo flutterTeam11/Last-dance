@@ -6,6 +6,8 @@ import '../../features/auth/presentation/screens/new_password_screen.dart';
 import '../../features/auth/presentation/screens/otp_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/screens/sign_up_screen.dart';
+import '../../features/drone/presentation/screens/drone_fullscreen_video_screen.dart';
+import '../../features/drone/presentation/screens/drone_main_shell.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/splash/splash_screen.dart';
 
@@ -48,23 +50,12 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) => const PlaceholderHomeScreen(),
+      builder: (context, state) => const DroneMainShell(),
+    ),
+    GoRoute(
+      path: '/fullscreen-video',
+      builder: (context, state) => const DroneFullscreenVideoScreen(),
     ),
   ],
 );
 
-class PlaceholderHomeScreen extends StatelessWidget {
-  const PlaceholderHomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          'Home Screen',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
-    );
-  }
-}

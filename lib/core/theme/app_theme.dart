@@ -11,6 +11,18 @@ class AppTheme {
   static const Color brandCyan = Color(0xFF00D7E1);
   static const Color brandBlue = Color(0xFF197FC5);
 
+  // Drone feature colors
+  static const Color connectedGreen = Color(0xFF34C759);
+  static const Color disconnectedRed = Color(0xFFFF3B30);
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color cardBorder = Color(0xFFF0F0F0);
+  static const Color statsOverlay = Color(0xCC1A1A2E);
+  static const Color darkBackground = Color(0xFF1A1A2E);
+  static const Color warningOrange = Color(0xFFFF9500);
+  static const Color reportCardBg = Color(0xFFF8F9FA);
+  static const Color navBarBg = Color(0xFFFFFFFF);
+  static const Color navBarInactive = Color(0xFFB0B8C4);
+
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [brandCyan, brandBlue],
     begin: Alignment.centerLeft,

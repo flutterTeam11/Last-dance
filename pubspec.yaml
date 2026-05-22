@@ -43,6 +43,10 @@ dependencies:
   firebase_auth: ^6.5.1
   dio: ^5.9.2
   google_sign_in: ^6.2.2
+  cloud_firestore: ^6.4.1
+  flutter_map: ^8.2.1
+  latlong2: ^0.9.1
+  flutter_vlc_player: ^7.4.2
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +74,7 @@ flutter:
     - assets/images/splash/
     - assets/images/onboarding/
     - assets/icons/
+    - assets/map/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -5,6 +6,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../features/auth/data/auth_repository_impl.dart';
 import '../../features/auth/domain/auth_repository.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/drone/data/drone_repository_impl.dart';
+import '../../features/drone/domain/drone_repository.dart';
+import '../../features/drone/presentation/cubit/drone_status_cubit.dart';
+import '../../features/drone/presentation/cubit/drone_tracking_cubit.dart';
+import '../../features/drone/presentation/cubit/video_feed_cubit.dart';
 import '../../features/onboarding/cubit/onboarding_cubit.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -13,6 +19,9 @@ void setupServiceLocator() {
   // Firebase
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   getIt.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn());
+  getIt.registerLazySingleton<FirebaseFirestore>(
+    () => FirebaseFirestore.instance,
+  );
 
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
@@ -21,10 +30,20 @@ void setupServiceLocator() {
       googleSignIn: getIt<GoogleSignIn>(),
     ),
   );
+  getIt.registerLazySingleton<DroneRepository>(
+    () => DroneRepositoryImpl(firestore: getIt<FirebaseFirestore>()),
+  );
 
   // Cubits
   getIt.registerFactory<OnboardingCubit>(() => OnboardingCubit());
   getIt.registerFactory<AuthCubit>(
     () => AuthCubit(authRepository: getIt<AuthRepository>()),
   );
+  getIt.registerLazySingleton<DroneTrackingCubit>(
+    () => DroneTrackingCubit(repository: getIt<DroneRepository>()),
+  );
+  getIt.registerLazySingleton<DroneStatusCubit>(
+    () => DroneStatusCubit(repository: getIt<DroneRepository>()),
+  );
+  getIt.registerLazySingleton<VideoFeedCubit>(() => VideoFeedCubit());
 }
