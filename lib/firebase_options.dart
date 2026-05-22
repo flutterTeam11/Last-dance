@@ -64,7 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '235397945333',
     projectId: 'graduatioproject-36452',
     storageBucket: 'graduatioproject-36452.firebasestorage.app',
-    iosClientId: '235397945333-r5pg73de9dnc0cjdo6bppknsjg0kpbc0.apps.googleusercontent.com',
+    iosClientId:
+        '235397945333-r5pg73de9dnc0cjdo6bppknsjg0kpbc0.apps.googleusercontent.com',
     iosBundleId: 'com.example.graduatioProject',
   );
 
@@ -74,7 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '235397945333',
     projectId: 'graduatioproject-36452',
     storageBucket: 'graduatioproject-36452.firebasestorage.app',
-    iosClientId: '235397945333-r5pg73de9dnc0cjdo6bppknsjg0kpbc0.apps.googleusercontent.com',
+    iosClientId:
+        '235397945333-r5pg73de9dnc0cjdo6bppknsjg0kpbc0.apps.googleusercontent.com',
     iosBundleId: 'com.example.graduatioProject',
   );
 

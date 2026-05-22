@@ -38,6 +38,11 @@ dependencies:
   flutter_screenutil: ^5.9.3
   get_it: ^8.0.2
   firebase_core: ^4.9.0
+  dartz: ^0.10.1
+  firebase_auth: ^6.5.1
+  dio: ^5.9.2
+  google_sign_up: ^6.1.0  
+  google_sign_in: ^6.2.2
 
 dev_dependencies:
   flutter_test:
