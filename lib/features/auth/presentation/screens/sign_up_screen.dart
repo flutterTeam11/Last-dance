@@ -97,8 +97,7 @@ class _SignUpViewState extends State<_SignUpView> {
                         child: AuthTextField(
                           controller: _firstNameController,
                           hint: 'First Name',
-                          validator: (v) =>
-                              v!.isEmpty ? 'Required' : null,
+                          validator: (v) => v!.isEmpty ? 'Required' : null,
                         ),
                       ),
                       SizedBox(width: 12.w),
@@ -106,8 +105,7 @@ class _SignUpViewState extends State<_SignUpView> {
                         child: AuthTextField(
                           controller: _lastNameController,
                           hint: 'Last Name',
-                          validator: (v) =>
-                              v!.isEmpty ? 'Required' : null,
+                          validator: (v) => v!.isEmpty ? 'Required' : null,
                         ),
                       ),
                     ],
@@ -117,24 +115,21 @@ class _SignUpViewState extends State<_SignUpView> {
                     controller: _emailController,
                     hint: 'Email address',
                     keyboardType: TextInputType.emailAddress,
-                    validator: (v) =>
-                        v!.isEmpty ? 'Required' : null,
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
                   ),
                   SizedBox(height: 14.h),
                   AuthTextField(
                     controller: _passwordController,
                     hint: 'Password',
                     obscureText: true,
-                    validator: (v) =>
-                        v!.length < 6 ? 'Min 6 characters' : null,
+                    validator: (v) => v!.length < 6 ? 'Min 6 characters' : null,
                   ),
                   SizedBox(height: 14.h),
                   AuthTextField(
                     controller: _confirmPasswordController,
                     hint: 'Confirm Password',
                     obscureText: true,
-                    validator: (v) =>
-                        v!.isEmpty ? 'Required' : null,
+                    validator: (v) => v!.isEmpty ? 'Required' : null,
                   ),
                   SizedBox(height: 28.h),
                   BlocBuilder<AuthCubit, AuthState>(
@@ -199,10 +194,7 @@ class _OrDivider extends StatelessWidget {
         const Expanded(child: Divider()),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w),
-          child: Text(
-            'or',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text('or', style: Theme.of(context).textTheme.bodyMedium),
         ),
         const Expanded(child: Divider()),
       ],

@@ -29,16 +29,10 @@ class AuthTextField extends StatelessWidget {
       style: TextStyle(fontSize: 13.sp, color: AppTheme.textPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(
-          fontSize: 13.sp,
-          color: AppTheme.textSecondary,
-        ),
+        hintStyle: TextStyle(fontSize: 13.sp, color: AppTheme.textSecondary),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 14.h,
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: const BorderSide(color: Color(0xFFE0E0E0)),

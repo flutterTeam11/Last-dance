@@ -10,10 +10,9 @@ class AuthRepositoryImpl implements AuthRepository {
   final GoogleSignIn _googleSignIn;
 
   const AuthRepositoryImpl({
-    required FirebaseAuth firebaseAuth,
-    required GoogleSignIn googleSignIn,
-  }) : _firebaseAuth = firebaseAuth,
-       _googleSignIn = googleSignIn;
+    required this._firebaseAuth,
+    required this._googleSignIn,
+  });
 
   @override
   Future<Either<AuthFailure, void>> signUp({

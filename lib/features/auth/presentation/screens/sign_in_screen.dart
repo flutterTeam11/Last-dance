@@ -107,8 +107,7 @@ class _SignInViewState extends State<_SignInView> {
                   BlocBuilder<AuthCubit, AuthState>(
                     builder: (context, state) {
                       return GradientButton(
-                        text:
-                            state is AuthLoading ? 'Loading...' : 'continue',
+                        text: state is AuthLoading ? 'Loading...' : 'continue',
                         onPressed: state is AuthLoading
                             ? () {}
                             : () => _onContinue(context),
@@ -167,10 +166,7 @@ class _OrDivider extends StatelessWidget {
         const Expanded(child: Divider()),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 12.w),
-          child: Text(
-            'or',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text('or', style: Theme.of(context).textTheme.bodyMedium),
         ),
         const Expanded(child: Divider()),
       ],

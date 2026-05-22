@@ -78,10 +78,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     onPressed: () {},
                     child: const Text('Resend the verification code'),
                   ),
-                  Text(
-                    '2:31',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  Text('2:31', style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ),
               SizedBox(height: 120.h),
