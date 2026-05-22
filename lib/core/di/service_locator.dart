@@ -18,9 +18,7 @@ final GetIt getIt = GetIt.instance;
 
 void setupServiceLocator() {
   // Core
-  getIt.registerLazySingleton<LocalStorageService>(
-    () => LocalStorageService(),
-  );
+  getIt.registerLazySingleton<LocalStorageService>(() => LocalStorageService());
 
   // Firebase
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);

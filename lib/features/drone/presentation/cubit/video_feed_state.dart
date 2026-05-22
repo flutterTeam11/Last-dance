@@ -11,10 +11,7 @@ class VideoFeedState extends Equatable {
     this.isFullscreen = false,
   });
 
-  VideoFeedState copyWith({
-    VideoMode? mode,
-    bool? isFullscreen,
-  }) {
+  VideoFeedState copyWith({VideoMode? mode, bool? isFullscreen}) {
     return VideoFeedState(
       mode: mode ?? this.mode,
       isFullscreen: isFullscreen ?? this.isFullscreen,

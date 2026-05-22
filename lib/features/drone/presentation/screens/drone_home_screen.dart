@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/gradient_button.dart';
-import '../../domain/drone_report.dart';
 import '../../domain/drone_status.dart';
 import '../cubit/drone_status_cubit.dart';
 import '../cubit/drone_status_state.dart';
@@ -13,13 +12,12 @@ import '../cubit/video_feed_cubit.dart';
 import '../cubit/video_feed_state.dart';
 import '../widgets/connection_status_bar.dart';
 import '../widgets/drone_status_card.dart';
-import '../widgets/report_tile.dart';
+import '../widgets/reports_section.dart';
 import '../widgets/video_mode_toggle.dart';
 import '../widgets/video_preview_card.dart';
 
 class DroneHomeScreen extends StatelessWidget {
   final VoidCallback? onMapTap;
-
   const DroneHomeScreen({super.key, this.onMapTap});
 
   @override
@@ -41,7 +39,7 @@ class DroneHomeScreen extends StatelessWidget {
               SizedBox(height: 16.h),
               _buildPlanMissionButton(context),
               SizedBox(height: 20.h),
-              _buildReportsSection(context),
+              const ReportsSection(),
               SizedBox(height: 20.h),
             ],
           ),
@@ -116,78 +114,6 @@ class DroneHomeScreen extends StatelessWidget {
         width: double.infinity,
         height: 52,
         onPressed: () {},
-      ),
-    );
-  }
-
-  Widget _buildReportsSection(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'reports',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          BlocBuilder<DroneStatusCubit, DroneStatusState>(
-            buildWhen: (prev, curr) {
-              if (prev is DroneStatusLoaded && curr is DroneStatusLoaded) {
-                return prev.reports != curr.reports;
-              }
-              return true;
-            },
-            builder: (context, state) {
-              final reports = state is DroneStatusLoaded
-                  ? state.reports
-                  : <DroneReport>[];
-
-              if (reports.isEmpty) {
-                return _buildEmptyReports();
-              }
-
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: reports.length,
-                itemBuilder: (context, index) {
-                  return ReportTile(report: reports[index]);
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyReports() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: AppTheme.reportCardBg,
-        borderRadius: BorderRadius.circular(14.r),
-      ),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(
-              Icons.inbox_outlined,
-              size: 32.w,
-              color: AppTheme.textSecondary,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'No reports yet',
-              style: TextStyle(fontSize: 13.sp, color: AppTheme.textSecondary),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/drone_status.dart';
+import 'drone_stat_item.dart';
 
 class DroneStatsBar extends StatelessWidget {
   final DroneStatus status;
@@ -18,11 +19,12 @@ class DroneStatsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bgColor = isOverlay ? AppTheme.statsOverlay : AppTheme.cardBackground;
     final textColor = isOverlay ? Colors.white : AppTheme.textPrimary;
-    final labelColor =
-        isOverlay ? Colors.white60 : AppTheme.textSecondary;
+    final labelColor = isOverlay ? Colors.white60 : AppTheme.textSecondary;
 
     return Container(
-      margin: isOverlay ? EdgeInsets.zero : EdgeInsets.symmetric(horizontal: 20.w),
+      margin: isOverlay
+          ? EdgeInsets.zero
+          : EdgeInsets.symmetric(horizontal: 20.w),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: bgColor,
@@ -32,25 +34,25 @@ class DroneStatsBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _StatItem(
+          DroneStatItem(
             value: '${status.battery}%',
             label: 'BATTERY',
             textColor: textColor,
             labelColor: labelColor,
           ),
-          _StatItem(
+          DroneStatItem(
             value: '${status.humanCount}',
             label: 'HUMAN',
             textColor: textColor,
             labelColor: labelColor,
           ),
-          _StatItem(
+          DroneStatItem(
             value: '${status.height.toStringAsFixed(0)}m',
             label: 'Hight',
             textColor: textColor,
             labelColor: labelColor,
           ),
-          _StatItem(
+          DroneStatItem(
             value: '${status.speed.toStringAsFixed(0)}Km',
             label: 'Speed',
             textColor: textColor,
@@ -58,47 +60,6 @@ class DroneStatsBar extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String value;
-  final String label;
-  final Color textColor;
-  final Color labelColor;
-
-  const _StatItem({
-    required this.value,
-    required this.label,
-    required this.textColor,
-    required this.labelColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-            color: textColor,
-          ),
-        ),
-        SizedBox(height: 2.h),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10.sp,
-            fontWeight: FontWeight.w500,
-            color: labelColor,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ],
     );
   }
 }

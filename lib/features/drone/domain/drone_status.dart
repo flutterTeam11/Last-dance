@@ -16,11 +16,11 @@ class DroneStatus extends Equatable {
   });
 
   const DroneStatus.initial()
-      : battery = 0,
-        humanCount = 0,
-        height = 0,
-        speed = 0,
-        isConnected = false;
+    : battery = 0,
+      humanCount = 0,
+      height = 0,
+      speed = 0,
+      isConnected = false;
 
   @override
   List<Object?> get props => [battery, humanCount, height, speed, isConnected];

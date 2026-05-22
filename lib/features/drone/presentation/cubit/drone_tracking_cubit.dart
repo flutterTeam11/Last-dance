@@ -16,7 +16,7 @@ class DroneTrackingCubit extends Cubit<DroneTrackingState> {
   Stream<void> get centerOnUserStream => _centerOnUserController.stream;
 
   DroneTrackingCubit({required this._repository})
-      : super(const DroneTrackingInitial());
+    : super(const DroneTrackingInitial());
 
   void triggerCenterOnUser() {
     _centerOnUserController.add(null);
@@ -31,18 +31,22 @@ class DroneTrackingCubit extends Cubit<DroneTrackingState> {
         _resetDisconnectTimer();
         _pathHistory.add(location);
 
-        emit(DroneTrackingActive(
-          location: location,
-          pathHistory: List.unmodifiable(_pathHistory),
-        ));
+        emit(
+          DroneTrackingActive(
+            location: location,
+            pathHistory: List.unmodifiable(_pathHistory),
+          ),
+        );
       },
       onError: (_) {
         final currentState = state;
-        emit(DroneTrackingDisconnected(
-          lastKnownLocation: currentState is DroneTrackingActive
-              ? currentState.location
-              : null,
-        ));
+        emit(
+          DroneTrackingDisconnected(
+            lastKnownLocation: currentState is DroneTrackingActive
+                ? currentState.location
+                : null,
+          ),
+        );
       },
     );
   }
@@ -52,9 +56,9 @@ class DroneTrackingCubit extends Cubit<DroneTrackingState> {
     _disconnectTimer = Timer(const Duration(seconds: 10), () {
       final currentState = state;
       if (currentState is DroneTrackingActive) {
-        emit(DroneTrackingDisconnected(
-          lastKnownLocation: currentState.location,
-        ));
+        emit(
+          DroneTrackingDisconnected(lastKnownLocation: currentState.location),
+        );
       }
     });
   }
@@ -63,10 +67,12 @@ class DroneTrackingCubit extends Cubit<DroneTrackingState> {
     _pathHistory.clear();
     final currentState = state;
     if (currentState is DroneTrackingActive) {
-      emit(DroneTrackingActive(
-        location: currentState.location,
-        pathHistory: const [],
-      ));
+      emit(
+        DroneTrackingActive(
+          location: currentState.location,
+          pathHistory: const [],
+        ),
+      );
     }
   }
 

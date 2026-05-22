@@ -60,10 +60,7 @@ class VideoModeToggle extends StatelessWidget {
           borderRadius: BorderRadius.circular(24.r),
           border: isActive
               ? null
-              : Border.all(
-                  color: Colors.grey.shade300,
-                  width: 1,
-                ),
+              : Border.all(color: Colors.grey.shade300, width: 1),
           boxShadow: isActive
               ? [
                   BoxShadow(

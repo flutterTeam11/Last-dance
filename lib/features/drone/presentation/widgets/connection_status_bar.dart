@@ -38,10 +38,11 @@ class ConnectionStatusBar extends StatelessWidget {
                   : AppTheme.disconnectedRed,
               boxShadow: [
                 BoxShadow(
-                  color: (isConnected
-                          ? AppTheme.connectedGreen
-                          : AppTheme.disconnectedRed)
-                      .withValues(alpha: 0.4),
+                  color:
+                      (isConnected
+                              ? AppTheme.connectedGreen
+                              : AppTheme.disconnectedRed)
+                          .withValues(alpha: 0.4),
                   blurRadius: 6.r,
                   spreadRadius: 1.r,
                 ),

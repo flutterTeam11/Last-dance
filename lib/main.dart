@@ -13,11 +13,11 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   setupServiceLocator();
   await getIt<LocalStorageService>().init();
-  runApp(const ResQerApp());
+  runApp(const PhoenixApp());
 }
 
-class ResQerApp extends StatelessWidget {
-  const ResQerApp({super.key});
+class PhoenixApp extends StatelessWidget {
+  const PhoenixApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class ResQerApp extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
           child: MaterialApp.router(
-            title: 'ResQer',
+            title: 'Phoenix',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             routerConfig: appRouter,

@@ -18,10 +18,7 @@ class DroneStatusLoaded extends DroneStatusState {
   final DroneStatus status;
   final List<DroneReport> reports;
 
-  const DroneStatusLoaded({
-    required this.status,
-    this.reports = const [],
-  });
+  const DroneStatusLoaded({required this.status, this.reports = const []});
 
   DroneStatusLoaded copyWith({
     DroneStatus? status,

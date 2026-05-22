@@ -12,11 +12,9 @@ class DroneRepositoryImpl implements DroneRepository {
 
   @override
   Stream<DroneLocation> watchDroneLocation() {
-    return _firestore
-        .collection('drone')
-        .doc('location')
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection('drone').doc('location').snapshots().map((
+      snapshot,
+    ) {
       final data = snapshot.data();
       if (data == null) {
         return const DroneLocation(lat: 30.0444, lng: 31.2357);
@@ -31,11 +29,9 @@ class DroneRepositoryImpl implements DroneRepository {
 
   @override
   Stream<DroneStatus> watchDroneStatus() {
-    return _firestore
-        .collection('drone')
-        .doc('status')
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection('drone').doc('status').snapshots().map((
+      snapshot,
+    ) {
       final data = snapshot.data();
       if (data == null) {
         return const DroneStatus.initial();
@@ -60,16 +56,16 @@ class DroneRepositoryImpl implements DroneRepository {
         .limit(20)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        return DroneReport(
-          type: _parseReportType(data['type'] as String? ?? ''),
-          message: data['message'] as String? ?? '',
-          timestamp:
-              (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-        );
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            return DroneReport(
+              type: _parseReportType(data['type'] as String? ?? ''),
+              message: data['message'] as String? ?? '',
+              timestamp:
+                  (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            );
+          }).toList();
+        });
   }
 
   @override

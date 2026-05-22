@@ -56,10 +56,7 @@ class _DroneMainShellState extends State<DroneMainShell> {
         BlocProvider.value(value: _videoFeedCubit),
       ],
       child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
-        ),
+        body: IndexedStack(index: _currentIndex, children: _screens),
         bottomNavigationBar: DroneBottomNavBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),

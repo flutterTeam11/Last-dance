@@ -48,14 +48,10 @@ final GoRouter appRouter = GoRouter(
         return NewPasswordScreen(oobCode: oobCode);
       },
     ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const DroneMainShell(),
-    ),
+    GoRoute(path: '/home', builder: (context, state) => const DroneMainShell()),
     GoRoute(
       path: '/fullscreen-video',
       builder: (context, state) => const DroneFullscreenVideoScreen(),
     ),
   ],
 );
-

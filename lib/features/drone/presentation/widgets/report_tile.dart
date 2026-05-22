@@ -17,10 +17,7 @@ class ReportTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.reportCardBg,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(
-          color: AppTheme.cardBorder,
-          width: 0.5,
-        ),
+        border: Border.all(color: AppTheme.cardBorder, width: 0.5),
       ),
       child: Row(
         children: [
@@ -31,11 +28,7 @@ class ReportTile extends StatelessWidget {
               shape: BoxShape.circle,
               color: _iconColor.withValues(alpha: 0.12),
             ),
-            child: Icon(
-              _icon,
-              size: 20.w,
-              color: _iconColor,
-            ),
+            child: Icon(_icon, size: 20.w, color: _iconColor),
           ),
           SizedBox(width: 12.w),
           Expanded(
@@ -61,11 +54,7 @@ class ReportTile extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            size: 20.w,
-            color: AppTheme.textSecondary,
-          ),
+          Icon(Icons.chevron_right, size: 20.w, color: AppTheme.textSecondary),
         ],
       ),
     );

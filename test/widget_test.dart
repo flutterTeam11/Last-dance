@@ -5,7 +5,7 @@ import 'package:graduatio_project/main.dart';
 
 void main() {
   testWidgets('Splash screen smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const ResQerApp());
+    await tester.pumpWidget(const PhoenixApp());
 
     expect(find.byType(Scaffold), findsOneWidget);
   });
