@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/di/service_locator.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/onboarding_page_indicator.dart';
@@ -17,7 +18,7 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => OnboardingCubit(),
+      create: (_) => getIt<OnboardingCubit>(),
       child: const _OnboardingContent(),
     );
   }
