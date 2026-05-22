@@ -124,15 +124,13 @@ class _OnboardingPage extends StatelessWidget {
           children: [
             SizedBox(height: 30.h),
             ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 305.w,
-                maxHeight: 292.h,
-              ),
+              constraints: BoxConstraints(maxWidth: 305.w, maxHeight: 292.h),
               child: SvgAssetImage(
                 path: image,
                 fit: BoxFit.contain,
                 width: 305.w,
                 height: 292.h,
+                borderRadius: BorderRadius.circular(95.r),
               ),
             ),
             SizedBox(height: 24.h),

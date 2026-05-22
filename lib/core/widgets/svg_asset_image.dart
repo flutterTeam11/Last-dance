@@ -8,6 +8,7 @@ class SvgAssetImage extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
+  final BorderRadiusGeometry? borderRadius;
 
   const SvgAssetImage({
     super.key,
@@ -15,6 +16,7 @@ class SvgAssetImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.contain,
+    this.borderRadius,
   });
 
   @override
@@ -25,7 +27,18 @@ class SvgAssetImage extends StatelessWidget {
         final bytes = snapshot.data;
         if (bytes == null) return const SizedBox.shrink();
 
-        return Image.memory(bytes, width: width, height: height, fit: fit);
+        Widget image = Image.memory(
+          bytes,
+          width: width,
+          height: height,
+          fit: fit,
+        );
+
+        if (borderRadius != null) {
+          image = ClipRRect(borderRadius: borderRadius!, child: image);
+        }
+
+        return image;
       },
     );
   }
