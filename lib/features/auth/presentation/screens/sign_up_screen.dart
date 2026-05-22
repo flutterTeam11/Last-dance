@@ -66,7 +66,7 @@ class _SignUpViewState extends State<_SignUpView> {
         if (state is AuthFailureState) {
           showSnakBar(context, state.message, isError: true);
         } else if (state is OtpSent) {
-          context.push('/otp', extra: state.maskedEmail);
+          context.push('/sign-in');
         }
       },
       child: Scaffold(

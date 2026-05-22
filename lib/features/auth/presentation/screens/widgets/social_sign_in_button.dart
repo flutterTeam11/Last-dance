@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:flutter_svg/svg.dart';
-import 'package:graduatio_project/core/widgets/svg_asset_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/theme/app_theme.dart';
 
@@ -34,8 +33,7 @@ class SocialSignInButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // SvgPicture.asset(assetPath, width: 22.w, height: 22.h),
-            SvgAssetImage(path: assetPath, width: 22.w, height: 22.h),
+            SvgPicture.asset(assetPath, width: 22.w, height: 22.h),
             SizedBox(width: 10.w),
             Text(
               label,
