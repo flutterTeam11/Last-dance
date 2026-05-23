@@ -598,8 +598,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 **Project Team** — Graduation Project 2026
 
-Project Link: [https://github.com/your-org/phoenix-drone](https://github.com/your-org/phoenix-drone)
-
 ---
 
 <p align="center">
