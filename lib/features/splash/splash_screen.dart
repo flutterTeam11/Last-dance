@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/di/service_locator.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/svg_asset_image.dart';
 import '../auth/presentation/cubit/auth_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -56,8 +56,8 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: AppTheme.splashBackground,
       body: Center(
-        child: SvgAssetImage(
-          path: 'assets/images/splash/Phoenix.svg',
+        child: SvgPicture.asset(
+          'assets/images/splash/Phoenix.svg',
           width: 184.w,
           height: 184.w,
         ),
