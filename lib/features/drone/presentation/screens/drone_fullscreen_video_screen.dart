@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/websocket/drone_ws_bridge.dart';
 import '../../domain/drone_status.dart';
 import '../cubit/drone_status_cubit.dart';
 import '../cubit/drone_status_state.dart';
@@ -23,6 +25,7 @@ class DroneFullscreenVideoScreen extends StatefulWidget {
 class _DroneFullscreenVideoScreenState
     extends State<DroneFullscreenVideoScreen> {
   bool _showOverlay = true;
+
   @override
   void initState() {
     super.initState();
@@ -103,13 +106,24 @@ class _DroneFullscreenVideoScreenState
   }
 
   Widget _buildBottomControls() {
+    final wsBridge = getIt<DroneWsBridge>();
     return Positioned(
       bottom: 30.h,
       left: 24.w,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: _showOverlay ? 1.0 : 0.0,
-        child: const VirtualJoystick(),
+        child: VirtualJoystick(
+          onDirectionChanged: (offset) {
+            wsBridge.sendCommand('move', {
+              'x': offset.dx.toStringAsFixed(2),
+              'y': offset.dy.toStringAsFixed(2),
+            });
+          },
+          onDirectionEnd: () {
+            wsBridge.sendCommand('move', {'x': '0', 'y': '0'});
+          },
+        ),
       ),
     );
   }
@@ -119,8 +133,25 @@ class _VideoContent extends StatelessWidget {
   const _VideoContent();
   @override
   Widget build(BuildContext context) {
+    final wsBridge = getIt<DroneWsBridge>();
     return BlocBuilder<VideoFeedCubit, VideoFeedState>(
-      builder: (context, state) => VideoFeedBackground(mode: state.mode),
+      builder: (context, state) {
+        return StreamBuilder<Uint8List>(
+          stream: wsBridge.videoFrame,
+          builder: (context, frameSnapshot) {
+            return StreamBuilder<List<DetectionBox>>(
+              stream: wsBridge.detectionBoxes,
+              builder: (context, detSnapshot) {
+                return VideoFeedBackground(
+                  mode: state.mode,
+                  videoFrame: frameSnapshot.data,
+                  detections: detSnapshot.data,
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

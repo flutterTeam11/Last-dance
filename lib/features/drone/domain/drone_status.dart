@@ -6,6 +6,7 @@ class DroneStatus extends Equatable {
   final double height;
   final double speed;
   final bool isConnected;
+  final double temperature;
 
   const DroneStatus({
     required this.battery,
@@ -13,6 +14,7 @@ class DroneStatus extends Equatable {
     required this.height,
     required this.speed,
     required this.isConnected,
+    this.temperature = 0,
   });
 
   const DroneStatus.initial()
@@ -20,8 +22,10 @@ class DroneStatus extends Equatable {
       humanCount = 0,
       height = 0,
       speed = 0,
-      isConnected = false;
+      isConnected = false,
+      temperature = 0;
 
   @override
-  List<Object?> get props => [battery, humanCount, height, speed, isConnected];
+  List<Object?> get props =>
+      [battery, humanCount, height, speed, isConnected, temperature];
 }

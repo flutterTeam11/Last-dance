@@ -13,12 +13,20 @@ import '../../features/drone/presentation/cubit/drone_tracking_cubit.dart';
 import '../../features/drone/presentation/cubit/video_feed_cubit.dart';
 import '../../features/onboarding/cubit/onboarding_cubit.dart';
 import '../utils/local_storage_service.dart';
+import '../websocket/drone_ws_bridge.dart';
+import '../websocket/ws_client.dart';
 
 final GetIt getIt = GetIt.instance;
 
 void setupServiceLocator() {
   // Core
   getIt.registerLazySingleton<LocalStorageService>(() => LocalStorageService());
+  getIt.registerLazySingleton<WsClient>(
+    () => WsClient(baseUrl: 'ws://192.168.1.10:8000'),
+  );
+  getIt.registerLazySingleton<DroneWsBridge>(
+    () => DroneWsBridge(getIt<WsClient>()),
+  );
 
   // Firebase
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);

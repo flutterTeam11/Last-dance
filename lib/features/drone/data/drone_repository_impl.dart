@@ -42,6 +42,7 @@ class DroneRepositoryImpl implements DroneRepository {
         height: (data['height'] as num?)?.toDouble() ?? 0,
         speed: (data['speed'] as num?)?.toDouble() ?? 0,
         isConnected: data['isConnected'] as bool? ?? false,
+        temperature: (data['temperature'] as num?)?.toDouble() ?? 0,
       );
     });
   }

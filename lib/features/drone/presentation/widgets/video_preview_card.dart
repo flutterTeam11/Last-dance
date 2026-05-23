@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/websocket/drone_ws_bridge.dart';
 import '../cubit/video_feed_state.dart';
 import 'ai_detection_overlay.dart';
 import 'simulated_feed.dart';
@@ -10,12 +13,16 @@ class VideoPreviewCard extends StatelessWidget {
   final VideoMode mode;
   final VoidCallback? onTap;
   final Widget? videoWidget;
+  final Uint8List? videoFrame;
+  final List<DetectionBox>? detections;
 
   const VideoPreviewCard({
     super.key,
     required this.mode,
     this.onTap,
     this.videoWidget,
+    this.videoFrame,
+    this.detections,
   });
 
   @override
@@ -40,40 +47,34 @@ class VideoPreviewCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (videoWidget != null)
+            if (videoFrame != null)
               ColorFiltered(
                 colorFilter: mode == VideoMode.thermal
                     ? const ColorFilter.matrix(<double>[
-                        0.5,
-                        0.5,
-                        0.5,
-                        0,
-                        0,
-                        0.1,
-                        0.1,
-                        0.1,
-                        0,
-                        0,
-                        -0.2,
-                        -0.2,
-                        -0.2,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        1,
-                        0,
+                        0.5, 0.5, 0.5, 0, 0,
+                        0.1, 0.1, 0.1, 0, 0,
+                        -0.2, -0.2, -0.2, 0, 0,
+                        0, 0, 0, 1, 0,
                       ])
-                    : const ColorFilter.mode(
-                        Colors.transparent,
-                        BlendMode.multiply,
-                      ),
+                    : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                child: Image.memory(videoFrame!, fit: BoxFit.cover),
+              )
+            else if (videoWidget != null)
+              ColorFiltered(
+                colorFilter: mode == VideoMode.thermal
+                    ? const ColorFilter.matrix(<double>[
+                        0.5, 0.5, 0.5, 0, 0,
+                        0.1, 0.1, 0.1, 0, 0,
+                        -0.2, -0.2, -0.2, 0, 0,
+                        0, 0, 0, 1, 0,
+                      ])
+                    : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
                 child: videoWidget!,
               )
             else
               SimulatedFeed(mode: mode),
-            if (mode == VideoMode.overlay) const AIDetectionOverlay(),
+            if (mode == VideoMode.overlay)
+              AIDetectionOverlay(detections: detections),
             Positioned(
               top: 8.h,
               right: 8.w,

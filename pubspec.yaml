@@ -49,6 +49,7 @@ dependencies:
   flutter_vlc_player: ^7.4.2
   geolocator: ^14.0.2
   shared_preferences: ^2.3.5
+  web_socket_channel: ^3.0.1
 
 dev_dependencies:
   flutter_test:

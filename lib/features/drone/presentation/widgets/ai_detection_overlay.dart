@@ -1,39 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/websocket/drone_ws_bridge.dart';
+
 class AIDetectionOverlay extends StatelessWidget {
-  const AIDetectionOverlay({super.key});
+  final List<DetectionBox>? detections;
+
+  const AIDetectionOverlay({super.key, this.detections});
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 24.w,
-                height: 24.w,
-                decoration: BoxDecoration(
+          child: Container(
+            width: 24.w,
+            height: 24.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF22C55E),
+                width: 1.5.w,
+              ),
+            ),
+            child: Center(
+              child: Container(
+                width: 4.w,
+                height: 4.w,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF22C55E),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF22C55E),
-                    width: 1.5.w,
-                  ),
-                ),
-                child: Center(
-                  child: Container(
-                    width: 4.w,
-                    height: 4.w,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF22C55E),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
         Positioned(
@@ -60,44 +59,49 @@ class AIDetectionOverlay extends StatelessWidget {
             ],
           ),
         ),
-        Positioned(
-          top: 50.h,
-          left: 80.w,
-          child: Container(
-            width: 70.w,
-            height: 90.h,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.redAccent, width: 2.w),
-              borderRadius: BorderRadius.circular(4.r),
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  top: -16.h,
-                  left: -2.w,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 4.w,
-                      vertical: 2.h,
-                    ),
-                    color: Colors.redAccent,
-                    child: Text(
-                      'HUMAN 92%',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+        ..._buildDetectionBoxes(),
+      ],
+    );
+  }
+
+  List<Widget> _buildDetectionBoxes() {
+    if (detections == null || detections!.isEmpty) return [];
+
+    return detections!.map((det) {
+      return Positioned(
+        top: det.y.h,
+        left: det.x.w,
+        child: Container(
+          width: det.w.w,
+          height: det.h.h,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.redAccent, width: 2.w),
+            borderRadius: BorderRadius.circular(4.r),
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: -16.h,
+                left: -2.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                  color: Colors.redAccent,
+                  child: Text(
+                    '${det.label.toUpperCase()} ${(det.confidence * 100).toInt()}%',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 8.sp,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      ],
-    );
+      );
+    }).toList();
   }
 
   Widget _buildHudLabel(String text) {

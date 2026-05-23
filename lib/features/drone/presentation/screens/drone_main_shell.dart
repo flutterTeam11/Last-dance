@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/websocket/drone_ws_bridge.dart';
+import '../../../../core/websocket/ws_client.dart';
 import '../cubit/drone_status_cubit.dart';
 import '../cubit/drone_tracking_cubit.dart';
 import '../cubit/video_feed_cubit.dart';
@@ -22,6 +24,8 @@ class _DroneMainShellState extends State<DroneMainShell> {
   late final DroneTrackingCubit _trackingCubit;
   late final DroneStatusCubit _statusCubit;
   late final VideoFeedCubit _videoFeedCubit;
+  late final WsClient _wsClient;
+  late final DroneWsBridge _wsBridge;
 
   late final List<Widget> _screens;
 
@@ -31,9 +35,13 @@ class _DroneMainShellState extends State<DroneMainShell> {
     _trackingCubit = getIt<DroneTrackingCubit>();
     _statusCubit = getIt<DroneStatusCubit>();
     _videoFeedCubit = getIt<VideoFeedCubit>();
+    _wsClient = getIt<WsClient>();
+    _wsBridge = DroneWsBridge(_wsClient);
 
     _statusCubit.startListening();
     _trackingCubit.startTracking();
+    _wsClient.connect();
+    _wsBridge.start();
 
     _screens = [
       DroneHomeScreen(
@@ -45,6 +53,13 @@ class _DroneMainShellState extends State<DroneMainShell> {
       ),
       const DroneMapScreen(),
     ];
+  }
+
+  @override
+  void dispose() {
+    _wsBridge.dispose();
+    _wsClient.dispose();
+    super.dispose();
   }
 
   @override

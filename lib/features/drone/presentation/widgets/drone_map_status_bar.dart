@@ -50,13 +50,13 @@ class DroneMapStatusBar extends StatelessWidget {
                   labelColor: AppTheme.textSecondary,
                 ),
                 DroneStatItem(
-                  value: '${status.humanCount}',
+                  value: '${status.temperature.toStringAsFixed(1)}°C',
                   label: 'TEMP',
                   textColor: AppTheme.textPrimary,
                   labelColor: AppTheme.textSecondary,
                 ),
                 DroneStatItem(
-                  value: '${status.battery}%',
+                  value: status.isConnected ? 'ONLINE' : 'OFFLINE',
                   label: 'SIGNAL',
                   textColor: AppTheme.textPrimary,
                   labelColor: AppTheme.textSecondary,

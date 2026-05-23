@@ -1,9 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/websocket/drone_ws_bridge.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../domain/drone_status.dart';
 import '../cubit/drone_status_cubit.dart';
@@ -68,13 +72,27 @@ class DroneHomeScreen extends StatelessWidget {
   }
 
   Widget _buildVideoSection(BuildContext context) {
+    final wsBridge = getIt<DroneWsBridge>();
+
     return BlocBuilder<VideoFeedCubit, VideoFeedState>(
       builder: (context, videoState) {
         return Column(
           children: [
-            VideoPreviewCard(
-              mode: videoState.mode,
-              onTap: () => context.push('/fullscreen-video'),
+            StreamBuilder<Uint8List>(
+              stream: wsBridge.videoFrame,
+              builder: (context, frameSnapshot) {
+                return StreamBuilder<List<DetectionBox>>(
+                  stream: wsBridge.detectionBoxes,
+                  builder: (context, detSnapshot) {
+                    return VideoPreviewCard(
+                      mode: videoState.mode,
+                      videoFrame: frameSnapshot.data,
+                      detections: detSnapshot.data,
+                      onTap: () => context.push('/fullscreen-video'),
+                    );
+                  },
+                );
+              },
             ),
             SizedBox(height: 12.h),
             VideoModeToggle(

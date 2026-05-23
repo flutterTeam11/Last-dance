@@ -1,31 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../cubit/drone_tracking_cubit.dart';
+import '../../../../core/websocket/drone_ws_bridge.dart';
 import '../widgets/drone_map_status_bar.dart';
 import '../widgets/drone_map_view.dart';
 import '../widgets/map_screen_header.dart';
 import '../widgets/mission_status_card.dart';
 import '../widgets/start_mission_button.dart';
 
-class DroneMapScreen extends StatefulWidget {
+class DroneMapScreen extends StatelessWidget {
   const DroneMapScreen({super.key});
 
   @override
-  State<DroneMapScreen> createState() => _DroneMapScreenState();
-}
-
-class _DroneMapScreenState extends State<DroneMapScreen> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<DroneTrackingCubit>().startTracking();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final wsBridge = getIt<DroneWsBridge>();
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
@@ -43,7 +33,9 @@ class _DroneMapScreenState extends State<DroneMapScreen> {
               SizedBox(height: 16.h),
               const MissionStatusCard(),
               SizedBox(height: 16.h),
-              const StartMissionButton(),
+              StartMissionButton(
+                onPressed: () => wsBridge.sendCommand('start_mission'),
+              ),
               SizedBox(height: 24.h),
             ],
           ),
