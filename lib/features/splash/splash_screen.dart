@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/di/service_locator.dart';
@@ -63,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     final state = cubit.state;
     if (state is AuthSuccess) {
-      // context.go('/home', extra: true);
+      context.go('/home', extra: true);
     } else {
       _scheduleOnboardingNavigation();
     }
@@ -72,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _scheduleOnboardingNavigation() {
     _navigationTimer = Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
-      // context.go('/onboarding');
+      context.go('/onboarding');
     });
   }
 
