@@ -5,7 +5,6 @@ class AppTheme {
   static const Color surfaceColor = Color(0xFFFFFFFF);
   static const Color textPrimary = Color(0xFF23282F);
   static const Color textSecondary = Color(0xFF68717E);
-  static const Color splashBackground = Color(0xFF15122B);
   static const Color skipTextColor = Color(0xFF151A20);
   static const Color inactiveIndicatorColor = Color(0xFFDCECF6);
   static const Color brandCyan = Color(0xFF00D7E1);
