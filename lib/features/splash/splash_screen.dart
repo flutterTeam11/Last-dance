@@ -63,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     final state = cubit.state;
     if (state is AuthSuccess) {
-      context.go('/home', extra: true);
+      // context.go('/home', extra: true);
     } else {
       _scheduleOnboardingNavigation();
     }
@@ -72,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _scheduleOnboardingNavigation() {
     _navigationTimer = Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
-      context.go('/onboarding');
+      // context.go('/onboarding');
     });
   }
 
@@ -89,7 +89,8 @@ class _SplashScreenState extends State<SplashScreen>
           );
         },
         child: Center(
-          child: SvgPicture.asset('assets/images/splash/Phoenix.svg'),
+          // child: SvgPicture.asset('assets/images/splash/phoenix_2.svg'),
+          child: Image.asset('assets/images/splash/phoenix_3.png'),
         ),
       ),
     );
