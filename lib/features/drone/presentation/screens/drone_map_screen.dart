@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/websocket/drone_ws_bridge.dart';
+import '../../../drone/domain/drone_repository.dart';
 import '../widgets/drone_map_status_bar.dart';
 import '../widgets/drone_map_view.dart';
 import '../widgets/map_screen_header.dart';
@@ -15,7 +15,6 @@ class DroneMapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wsBridge = getIt<DroneWsBridge>();
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
@@ -34,7 +33,9 @@ class DroneMapScreen extends StatelessWidget {
               const MissionStatusCard(),
               SizedBox(height: 16.h),
               StartMissionButton(
-                onPressed: () => wsBridge.sendCommand('start_mission'),
+                onPressed: () {
+                  getIt<DroneRepository>().sendCommand('start_mission', {});
+                },
               ),
               SizedBox(height: 24.h),
             ],

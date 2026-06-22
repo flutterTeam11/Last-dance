@@ -22,7 +22,7 @@ void setupServiceLocator() {
   // Core
   getIt.registerLazySingleton<LocalStorageService>(() => LocalStorageService());
   getIt.registerLazySingleton<WsClient>(
-    () => WsClient(baseUrl: 'ws://192.168.1.10:8000'),
+    () => WsClient(baseUrl: 'ws://192.168.1.2:8000'),
   );
   getIt.registerLazySingleton<DroneWsBridge>(
     () => DroneWsBridge(getIt<WsClient>()),

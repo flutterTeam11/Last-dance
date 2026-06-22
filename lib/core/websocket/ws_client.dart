@@ -112,7 +112,7 @@ class WsClient {
     if (_commandSocket == null) return;
     final msg = jsonEncode({
       'type': type,
-      'data': ?data,
+      'data': data ?? {},
     });
     _commandSocket!.add(msg);
   }
