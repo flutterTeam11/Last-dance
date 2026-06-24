@@ -9,11 +9,13 @@ class DroneWsBridge {
 
   DroneWsBridge(this._client);
 
-  final _detectionBoxesController = StreamController<List<DetectionBox>>.broadcast();
+  final _detectionBoxesController =
+      StreamController<List<DetectionBox>>.broadcast();
   final _videoFrameController = StreamController<Uint8List>.broadcast();
   final _reportController = StreamController<DroneReport>.broadcast();
 
-  Stream<List<DetectionBox>> get detectionBoxes => _detectionBoxesController.stream;
+  Stream<List<DetectionBox>> get detectionBoxes =>
+      _detectionBoxesController.stream;
   Stream<Uint8List> get videoFrame => _videoFrameController.stream;
   Stream<DroneReport> get reportStream => _reportController.stream;
 
@@ -34,17 +36,19 @@ class DroneWsBridge {
   }
 
   void _onDetection(Map<String, dynamic> data) {
-    final detections = (data['detections'] as List<dynamic>?)?.map((d) {
-      final map = d as Map<String, dynamic>;
-      return DetectionBox(
-        label: map['label'] as String? ?? 'unknown',
-        confidence: (map['confidence'] as num?)?.toDouble() ?? 0,
-        x: (map['x'] as num?)?.toDouble() ?? 0,
-        y: (map['y'] as num?)?.toDouble() ?? 0,
-        w: (map['w'] as num?)?.toDouble() ?? 0,
-        h: (map['h'] as num?)?.toDouble() ?? 0,
-      );
-    }).toList() ?? [];
+    final detections =
+        (data['detections'] as List<dynamic>?)?.map((d) {
+          final map = d as Map<String, dynamic>;
+          return DetectionBox(
+            label: map['label'] as String? ?? 'unknown',
+            confidence: (map['confidence'] as num?)?.toDouble() ?? 0,
+            x: (map['x'] as num?)?.toDouble() ?? 0,
+            y: (map['y'] as num?)?.toDouble() ?? 0,
+            w: (map['w'] as num?)?.toDouble() ?? 0,
+            h: (map['h'] as num?)?.toDouble() ?? 0,
+          );
+        }).toList() ??
+        [];
 
     _detectionBoxesController.add(detections);
 
@@ -52,17 +56,19 @@ class DroneWsBridge {
     if (thermal != null) {
       final avgTemp = (thermal['avg_temp'] as num?)?.toDouble();
       if (avgTemp != null && avgTemp > 40) {
-        _reportController.add(DroneReport(
-          type: ReportType.humanDetected,
-          message: 'Heat signature detected: ${avgTemp.toStringAsFixed(1)}°C',
-          timestamp: DateTime.now(),
-        ));
+        _reportController.add(
+          DroneReport(
+            type: ReportType.humanDetected,
+            message: 'Heat signature detected: ${avgTemp.toStringAsFixed(1)}°C',
+            timestamp: DateTime.now(),
+          ),
+        );
       }
     }
   }
 
-  void sendCommand(String type, [Map<String, dynamic>? data]) {
-    _client.sendCommand(type, data);
+  bool sendCommand(String type, [Map<String, dynamic>? data]) {
+    return _client.sendCommand(type, data);
   }
 
   void dispose() {

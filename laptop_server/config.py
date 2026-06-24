@@ -21,3 +21,8 @@ BUFFER_SIZE = 65536
 
 SERVER_IP = socket.gethostbyname(socket.gethostname())
 CPU_COUNT = multiprocessing.cpu_count()
+
+ESP32_PORT = "/dev/ttyUSB0"
+ESP32_BAUD = 115200
+
+FIREBASE_SERVICE_ACCOUNT = None

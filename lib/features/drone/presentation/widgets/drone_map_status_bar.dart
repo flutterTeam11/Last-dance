@@ -3,9 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../domain/drone_status.dart';
-import '../cubit/drone_status_cubit.dart';
-import '../cubit/drone_status_state.dart';
+import '../cubit/pi_health_cubit.dart';
+import '../cubit/pi_health_state.dart';
 import 'drone_stat_item.dart';
 
 class DroneMapStatusBar extends StatelessWidget {
@@ -15,17 +14,8 @@ class DroneMapStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: BlocBuilder<DroneStatusCubit, DroneStatusState>(
-        buildWhen: (prev, curr) {
-          if (prev is DroneStatusLoaded && curr is DroneStatusLoaded) {
-            return prev.status != curr.status;
-          }
-          return true;
-        },
+      child: BlocBuilder<PiHealthCubit, PiHealthState>(
         builder: (context, state) {
-          final status = state is DroneStatusLoaded
-              ? state.status
-              : const DroneStatus.initial();
           return Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             decoration: BoxDecoration(
@@ -44,21 +34,35 @@ class DroneMapStatusBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 DroneStatItem(
-                  value: '${status.battery}%',
+                  value: state.battery != null
+                      ? '${state.battery!.toInt()}%'
+                      : '--%',
                   label: 'BATTERY',
                   textColor: AppTheme.textPrimary,
                   labelColor: AppTheme.textSecondary,
                 ),
                 DroneStatItem(
-                  value: '${status.temperature.toStringAsFixed(1)}°C',
+                  value: state.temperature != null
+                      ? '${state.temperature!.toStringAsFixed(1)}°C'
+                      : '--°C',
                   label: 'TEMP',
                   textColor: AppTheme.textPrimary,
                   labelColor: AppTheme.textSecondary,
                 ),
                 DroneStatItem(
-                  value: status.isConnected ? 'ONLINE' : 'OFFLINE',
-                  label: 'SIGNAL',
-                  textColor: AppTheme.textPrimary,
+                  value: state.motorsRunning ? 'RUNNING' : 'IDLE',
+                  label: 'MOTORS',
+                  textColor: state.motorsRunning
+                      ? AppTheme.connectedGreen
+                      : AppTheme.textPrimary,
+                  labelColor: AppTheme.textSecondary,
+                ),
+                DroneStatItem(
+                  value: state.isOnline ? 'ONLINE' : 'OFFLINE',
+                  label: 'PI',
+                  textColor: state.isOnline
+                      ? AppTheme.connectedGreen
+                      : AppTheme.disconnectedRed,
                   labelColor: AppTheme.textSecondary,
                 ),
               ],

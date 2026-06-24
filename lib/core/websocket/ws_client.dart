@@ -108,13 +108,11 @@ class WsClient {
     _statusController.add(_status);
   }
 
-  void sendCommand(String type, [Map<String, dynamic>? data]) {
-    if (_commandSocket == null) return;
-    final msg = jsonEncode({
-      'type': type,
-      'data': data ?? {},
-    });
+  bool sendCommand(String type, [Map<String, dynamic>? data]) {
+    if (_commandSocket == null) return false;
+    final msg = jsonEncode({'type': type, 'data': data ?? {}});
     _commandSocket!.add(msg);
+    return true;
   }
 
   Future<void> disconnect() async {

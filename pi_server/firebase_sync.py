@@ -114,7 +114,11 @@ def _execute_command(cmd_data):
         elif direction == "stop":
             hardware.PUL1.off(); hardware.PUL2.off()
     elif cmd == "start_mission":
-        _add_report("mission_complete", "Mission started")
+        ok = hardware.run_start_mission()
+        _add_report(
+            "mission_complete",
+            "Mission started" if ok else "Mission start failed",
+        )
 
 
 class FirebaseSync:

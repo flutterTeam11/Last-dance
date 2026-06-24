@@ -10,8 +10,11 @@ import '../../features/drone/data/drone_repository_impl.dart';
 import '../../features/drone/domain/drone_repository.dart';
 import '../../features/drone/presentation/cubit/drone_status_cubit.dart';
 import '../../features/drone/presentation/cubit/drone_tracking_cubit.dart';
+import '../../features/drone/presentation/cubit/mission_cubit.dart';
+import '../../features/drone/presentation/cubit/pi_health_cubit.dart';
 import '../../features/drone/presentation/cubit/video_feed_cubit.dart';
 import '../../features/onboarding/cubit/onboarding_cubit.dart';
+import '../pi_http_client.dart';
 import '../utils/local_storage_service.dart';
 import '../websocket/drone_ws_bridge.dart';
 import '../websocket/ws_client.dart';
@@ -21,8 +24,11 @@ final GetIt getIt = GetIt.instance;
 void setupServiceLocator() {
   // Core
   getIt.registerLazySingleton<LocalStorageService>(() => LocalStorageService());
+  getIt.registerLazySingleton<PiHttpClient>(
+    () => PiHttpClient(baseUrl: 'http://raspaberry.local:5000'),
+  );
   getIt.registerLazySingleton<WsClient>(
-    () => WsClient(baseUrl: 'ws://192.168.1.2:8000'),
+    () => WsClient(baseUrl: 'ws://raspaberry.local:8000'),
   );
   getIt.registerLazySingleton<DroneWsBridge>(
     () => DroneWsBridge(getIt<WsClient>()),
@@ -60,4 +66,13 @@ void setupServiceLocator() {
     () => DroneStatusCubit(repository: getIt<DroneRepository>()),
   );
   getIt.registerLazySingleton<VideoFeedCubit>(() => VideoFeedCubit());
+  getIt.registerLazySingleton<MissionCubit>(
+    () => MissionCubit(piClient: getIt<PiHttpClient>()),
+  );
+  getIt.registerLazySingleton<PiHealthCubit>(
+    () => PiHealthCubit(
+      piClient: getIt<PiHttpClient>(),
+      droneStatusCubit: getIt<DroneStatusCubit>(),
+    ),
+  );
 }

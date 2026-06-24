@@ -184,10 +184,15 @@ async def commands_endpoint(ws: WebSocket):
                     hardware.PUL1.off(); hardware.PUL2.off()
                 await ws.send_json({"status": "ok", "command": cmd_type})
             elif cmd_type == "start_mission":
+                ok = await asyncio.to_thread(hardware.run_start_mission)
                 if fb_sync:
                     import firebase_sync
-                    firebase_sync._add_report("mission_complete", "Mission started via Flutter")
-                await ws.send_json({"status": "ok", "command": cmd_type})
+                    firebase_sync._add_report(
+                        "mission_complete",
+                        "Mission started via Flutter" if ok else "Mission start failed",
+                    )
+                status = "ok" if ok else "error"
+                await ws.send_json({"status": status, "command": cmd_type})
             else:
                 await ws.send_json({"error": f"unknown command: {cmd_type}"})
     except WebSocketDisconnect:
@@ -198,16 +203,5 @@ async def commands_endpoint(ws: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    import subprocess
-    import os
-    
-    # مسار سكريبت الكاميرا
-    camera_script = os.path.join(os.path.dirname(__file__), "camera_stream.py")
-    try:
-        # تشغيل ملف الكاميرا في الخلفية
-        subprocess.Popen(["python3", camera_script])
-        logger.info("تم تشغيل بث الكاميرا بنجاح في الخلفية")
-    except Exception as e:
-        logger.error(f"فشل في تشغيل الكاميرا: {e}")
 
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -6,6 +6,8 @@ import '../../../../core/websocket/drone_ws_bridge.dart';
 import '../../../../core/websocket/ws_client.dart';
 import '../cubit/drone_status_cubit.dart';
 import '../cubit/drone_tracking_cubit.dart';
+import '../cubit/mission_cubit.dart';
+import '../cubit/pi_health_cubit.dart';
 import '../cubit/video_feed_cubit.dart';
 import '../screens/drone_home_screen.dart';
 import '../screens/drone_map_screen.dart';
@@ -24,6 +26,8 @@ class _DroneMainShellState extends State<DroneMainShell> {
   late final DroneTrackingCubit _trackingCubit;
   late final DroneStatusCubit _statusCubit;
   late final VideoFeedCubit _videoFeedCubit;
+  late final MissionCubit _missionCubit;
+  late final PiHealthCubit _piHealthCubit;
   late final WsClient _wsClient;
   late final DroneWsBridge _wsBridge;
 
@@ -35,6 +39,8 @@ class _DroneMainShellState extends State<DroneMainShell> {
     _trackingCubit = getIt<DroneTrackingCubit>();
     _statusCubit = getIt<DroneStatusCubit>();
     _videoFeedCubit = getIt<VideoFeedCubit>();
+    _missionCubit = getIt<MissionCubit>();
+    _piHealthCubit = getIt<PiHealthCubit>();
     _wsClient = getIt<WsClient>();
     _wsBridge = DroneWsBridge(_wsClient);
 
@@ -69,6 +75,8 @@ class _DroneMainShellState extends State<DroneMainShell> {
         BlocProvider.value(value: _trackingCubit),
         BlocProvider.value(value: _statusCubit),
         BlocProvider.value(value: _videoFeedCubit),
+        BlocProvider.value(value: _missionCubit),
+        BlocProvider.value(value: _piHealthCubit),
       ],
       child: Scaffold(
         body: IndexedStack(index: _currentIndex, children: _screens),

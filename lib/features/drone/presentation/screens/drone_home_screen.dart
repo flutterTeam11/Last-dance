@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/websocket/drone_ws_bridge.dart';
-import '../../../../core/widgets/gradient_button.dart';
+// import '../../../../core/widgets/gradient_button.dart';
 import '../../domain/drone_status.dart';
 import '../cubit/drone_status_cubit.dart';
 import '../cubit/drone_status_state.dart';
@@ -41,7 +41,7 @@ class DroneHomeScreen extends StatelessWidget {
               SizedBox(height: 16.h),
               _buildStatusSection(context),
               SizedBox(height: 16.h),
-              _buildPlanMissionButton(context),
+              // _buildPlanMissionButton(context),
               SizedBox(height: 20.h),
               const ReportsSection(),
               SizedBox(height: 20.h),
@@ -124,15 +124,15 @@ class DroneHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPlanMissionButton(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: GradientButton(
-        text: 'PLAN MISSION',
-        width: double.infinity,
-        height: 52,
-        onPressed: () {},
-      ),
-    );
-  }
+  // Widget _buildPlanMissionButton(BuildContext context) {
+  //   return Padding(
+  //     padding: EdgeInsets.symmetric(horizontal: 20.w),
+  //     child: GradientButton(
+  //       text: 'PLAN MISSION',
+  //       width: double.infinity,
+  //       height: 52,
+  //       onPressed: () {},
+  //     ),
+  //   );
+  // }
 }

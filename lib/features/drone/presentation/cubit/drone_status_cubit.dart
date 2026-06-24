@@ -42,6 +42,21 @@ class DroneStatusCubit extends Cubit<DroneStatusState> {
     }, onError: (_) {});
   }
 
+  void updateConnectionStatus(bool isConnected) {
+    final currentState = state;
+    if (currentState is DroneStatusLoaded) {
+      emit(currentState.copyWith(
+        status: currentState.status.copyWith(isConnected: isConnected),
+      ));
+    } else {
+      emit(
+        DroneStatusLoaded(
+          status: DroneStatus.initial().copyWith(isConnected: isConnected),
+        ),
+      );
+    }
+  }
+
   @override
   Future<void> close() {
     _statusSubscription?.cancel();

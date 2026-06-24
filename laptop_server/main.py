@@ -6,11 +6,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
-from config import WS_HOST, WS_PORT, SERVER_IP, TCP_PORT
+from config import WS_HOST, WS_PORT, SERVER_IP, TCP_PORT, ESP32_PORT, ESP32_BAUD
 from receivers.tcp_receiver import TcpReceiver
 from broadcast.ws_manager import ConnectionManager
 from ai_integration.detector import Detector
 from ai_integration.pipeline import Pipeline
+from esp32_interface import Esp32Interface
+from firebase_sync import LaptopFirebaseSync
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,6 +25,8 @@ manager = ConnectionManager()
 detector = Detector()
 pipeline = Pipeline(frame_queue, detector)
 tcp_receiver = TcpReceiver(frame_queue)
+esp32 = Esp32Interface(port=ESP32_PORT, baud=ESP32_BAUD)
+fb_sync = LaptopFirebaseSync()
 
 
 @asynccontextmanager
@@ -30,15 +34,34 @@ async def lifespan(app: FastAPI):
     logger.info(f"Server IP: {SERVER_IP}")
     logger.info(f"TCP port: {TCP_PORT}")
     logger.info(f"WS port: {WS_PORT}")
+
     await tcp_receiver.start()
     await pipeline.start()
+
+    esp32.set_sensor_callback(_on_esp32_sensor)
+    esp32.set_location_callback(_on_esp32_location)
+    await esp32.connect()
+    await esp32.start()
+
+    fb_sync.start()
+
     asyncio.create_task(_broadcaster())
     yield
+    await esp32.stop()
     await tcp_receiver.stop()
     await pipeline.stop()
+    fb_sync.stop()
 
 
 app = FastAPI(title="Phoenix Drone Server", lifespan=lifespan)
+
+
+def _on_esp32_sensor(data: dict):
+    fb_sync.update_sensors(data)
+
+
+def _on_esp32_location(lat: float, lng: float):
+    fb_sync.update_location(lat, lng)
 
 
 async def _broadcaster():
@@ -63,6 +86,8 @@ async def health():
         "video_clients": manager.video_client_count,
         "detection_clients": manager.detection_client_count,
         "pipeline_queue": pipeline.output_queue_size(),
+        "esp32_connected": esp32.is_connected,
+        "fb_sync_running": fb_sync.is_running,
     })
 
 
@@ -104,14 +129,33 @@ async def commands_endpoint(ws: WebSocket):
 
 async def _handle_command(msg: dict):
     cmd_type = msg.get("type")
+    cmd_data = msg.get("data", {})
+
     if cmd_type == "move":
-        logger.debug(f"Move command: {msg.get('data')}")
+        logger.info(f"Move command: {cmd_data}")
+        await esp32.send_command("move", cmd_data)
+
     elif cmd_type == "start_mission":
-        logger.info("Mission started")
+        logger.info("Mission started via Flutter")
+        await esp32.send_command("start_mission")
+        fb_sync.write_command("start_mission")
+        fb_sync.add_report("mission_complete", "Mission started from Flutter app")
+
     elif cmd_type == "stop_mission":
         logger.info("Mission stopped")
+        await esp32.send_command("stop_mission")
+        fb_sync.write_command("stop_mission")
+
     elif cmd_type == "land":
         logger.info("Land command received")
+        await esp32.send_command("land")
+
+    elif cmd_type == "set_speed":
+        logger.info(f"Set speed: {cmd_data}")
+        await esp32.send_command("set_speed", cmd_data)
+
+    else:
+        logger.warning(f"Unknown command type: {cmd_type}")
 
 
 if __name__ == "__main__":

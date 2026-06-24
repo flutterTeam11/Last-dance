@@ -157,6 +157,72 @@ def diagram_auth_flow():
     return img
 
 
+def diagram_project_overview():
+    img, draw = base(
+        "Phoenix Project Overview",
+        "AI-assisted drone search and rescue: live video, map tracking, telemetry and control",
+    )
+
+    mission = box(
+        draw,
+        (690, 385),
+        "Search & Rescue Mission",
+        "Rescue team monitors the drone\nfrom one mobile ground station\nwith live context and control",
+        COLORS["red"],
+        540,
+        230,
+    )
+    pi = box(
+        draw,
+        (95, 280),
+        "Raspberry Pi Drone",
+        "Camera captures video\nSensors read environment\nGPIO drives motors\nFirebase sync runs onboard",
+        COLORS["green"],
+        420,
+        300,
+    )
+    laptop = box(
+        draw,
+        (710, 700),
+        "Laptop Server",
+        "FastAPI middleware\nTCP video receiver\nOpenCV + AI detection\nWebSocket broadcaster",
+        COLORS["cyan"],
+        500,
+        250,
+    )
+    firebase = box(
+        draw,
+        (1365, 285),
+        "Firebase Cloud",
+        "Auth for users\nFirestore location/status\nReports and commands\nRealtime snapshots",
+        COLORS["amber"],
+        430,
+        300,
+    )
+    app = box(
+        draw,
+        (735, 230),
+        "Flutter Mobile App",
+        "Onboarding and Auth\nLive video + detections\nOpenStreetMap tracking\nJoystick and mission UI",
+        COLORS["blue"],
+        455,
+        270,
+    )
+
+    arrow(draw, (pi[2], 415), (app[0], 365), COLORS["green"], label="field data", label_offset=(-35, -62))
+    arrow(draw, (pi[2] - 15, pi[3]), (laptop[0] + 40, laptop[1]), COLORS["cyan"], label="TCP video", label_offset=(-95, 8))
+    arrow(draw, (laptop[0] + 250, laptop[1]), (app[0] + 230, app[3]), COLORS["blue"], label="video + AI", label_offset=(-80, -48))
+    arrow(draw, (pi[2], 500), (firebase[0], 430), COLORS["amber"], label="telemetry + location", label_offset=(-165, -56))
+    arrow(draw, (firebase[0], 500), (pi[2], 545), COLORS["red"], label="mission commands", label_offset=(-150, 18))
+    arrow(draw, (firebase[0] + 20, firebase[1]), (app[2] - 20, app[1] + 70), COLORS["amber"], label="auth + realtime data", label_offset=(-170, -20))
+    arrow(draw, (app[0] + 210, app[3]), (mission[0] + 270, mission[1]), COLORS["blue"], label="operator view", label_offset=(-80, -35))
+    arrow(draw, (mission[0] + 270, mission[3]), (laptop[0] + 250, laptop[1]), COLORS["red"], label="control decisions", label_offset=(-120, 6))
+
+    pill(draw, (100, 930), "Intro line: Phoenix connects drone hardware, AI video processing, Firebase realtime data, and a Flutter control app.", COLORS["cyan"])
+    pill(draw, (100, 975), "Outcome: faster awareness for rescue teams during field missions.", COLORS["green"])
+    return img
+
+
 def diagram_mapping_firebase():
     img, draw = base(
         "Mapping With Firebase and Mission Flow",
@@ -209,6 +275,7 @@ def diagram_system_video():
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     outputs = {
+        "00_project_overview.png": diagram_project_overview(),
         "01_splash_onboarding_auth.png": diagram_auth_flow(),
         "02_mapping_firebase_flow.png": diagram_mapping_firebase(),
         "03_pi_video_laptop_firebase.png": diagram_system_video(),
