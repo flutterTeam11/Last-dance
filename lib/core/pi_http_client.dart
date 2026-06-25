@@ -38,6 +38,22 @@ class PiHttpClient {
     }
   }
 
+  Future<bool> startMotor1() async {
+    return _sendGet('/motor1/start', 'startMotor1');
+  }
+
+  Future<bool> stopMotor1() async {
+    return _sendGet('/motor1/stop', 'stopMotor1');
+  }
+
+  Future<bool> startMotor2() async {
+    return _sendGet('/motor2/start', 'startMotor2');
+  }
+
+  Future<bool> stopMotor2() async {
+    return _sendGet('/motor2/stop', 'stopMotor2');
+  }
+
   Future<Map<String, dynamic>> getStatus() async {
     final response = await _dio.get('/status');
     return response.data as Map<String, dynamic>;

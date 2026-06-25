@@ -11,6 +11,7 @@ import '../widgets/drone_map_status_bar.dart';
 import '../widgets/drone_map_view.dart';
 import '../widgets/map_screen_header.dart';
 import '../widgets/mission_status_card.dart';
+import '../widgets/motor_control_panel.dart';
 import '../widgets/start_mission_button.dart';
 
 class DroneMapScreen extends StatefulWidget {
@@ -47,6 +48,8 @@ class _DroneMapScreenState extends State<DroneMapScreen> {
               const MissionStatusCard(),
               SizedBox(height: 16.h),
               const _MissionButtons(),
+              SizedBox(height: 16.h),
+              const _MotorControlsSection(),
               SizedBox(height: 24.h),
             ],
           ),
@@ -108,5 +111,14 @@ class _MissionButtons extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _MotorControlsSection extends StatelessWidget {
+  const _MotorControlsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return const MotorControlPanel();
   }
 }

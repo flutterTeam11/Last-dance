@@ -38,6 +38,8 @@ class PiHealthCubit extends Cubit<PiHealthState> {
           name: 'pi_health');
 
       final motorsRunning = status['motors_running'] == true;
+      final motor1Running = status['motor1'] == true;
+      final motor2Running = status['motor2'] == true;
       final battery = (status['battery'] as num?)?.toDouble();
       final temperature = (status['temperature'] as num?)?.toDouble();
 
@@ -45,6 +47,8 @@ class PiHealthCubit extends Cubit<PiHealthState> {
         isOnline: true,
         lastSeen: DateTime.now(),
         motorsRunning: motorsRunning,
+        motor1Running: motor1Running,
+        motor2Running: motor2Running,
         battery: battery,
         temperature: temperature,
       ));
