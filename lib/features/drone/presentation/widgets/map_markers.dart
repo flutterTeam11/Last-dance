@@ -6,13 +6,13 @@ import 'package:latlong2/latlong.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class MapMarkers extends StatelessWidget {
-  final LatLng dronePosition;
+  final LatLng? dronePosition;
   final List<LatLng> path;
   final LatLng? userLocation;
 
   const MapMarkers({
     super.key,
-    required this.dronePosition,
+    this.dronePosition,
     required this.path,
     this.userLocation,
   });
@@ -21,15 +21,15 @@ class MapMarkers extends StatelessWidget {
   Widget build(BuildContext context) {
     return MarkerLayer(
       markers: [
-        _droneMarker(),
+        if (dronePosition != null) _droneMarker(dronePosition!),
         if (userLocation != null) _userMarker(userLocation!),
       ],
     );
   }
 
-  Marker _droneMarker() {
+  Marker _droneMarker(LatLng position) {
     return Marker(
-      point: dronePosition,
+      point: position,
       width: 50.w,
       height: 50.w,
       child: Container(

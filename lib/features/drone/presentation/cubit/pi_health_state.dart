@@ -15,8 +15,8 @@ class PiHealthState extends Equatable {
     this.motorsRunning = false,
     this.motor1Running = false,
     this.motor2Running = false,
-    this.battery,
-    this.temperature,
+    this.battery = 70.0,
+    this.temperature = 30.0,
   });
 
   PiHealthState copyWith({

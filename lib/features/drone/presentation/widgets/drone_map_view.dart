@@ -28,6 +28,7 @@ class _DroneMapViewState extends State<DroneMapView> {
   bool _mapReady = false;
   LatLng? _userLocation;
   StreamSubscription<void>? _centerOnUserSubscription;
+  StreamSubscription<LatLng>? _userLocationSubscription;
 
   @override
   void initState() {
@@ -36,13 +37,53 @@ class _DroneMapViewState extends State<DroneMapView> {
         .listen((_) {
           _centerAndZoomOnUser();
         });
+    _startUserLocationTracking();
   }
 
   @override
   void dispose() {
     _centerOnUserSubscription?.cancel();
+    _userLocationSubscription?.cancel();
     _mapController.dispose();
     super.dispose();
+  }
+
+  Future<void> _startUserLocationTracking() async {
+    final initialLocation = await getCurrentLocation(
+      onError: (msg) {
+        if (mounted) showSnakBar(context, msg, isError: true);
+      },
+    );
+    if (!mounted) return;
+
+    if (initialLocation != null) {
+      setState(() => _userLocation = initialLocation);
+      if (_mapReady) _mapController.move(initialLocation, 16.5);
+    }
+
+    final stream = await watchCurrentLocation(
+      onError: (msg) {
+        if (mounted) showSnakBar(context, msg, isError: true);
+      },
+    );
+    if (stream == null || !mounted) return;
+
+    _userLocationSubscription?.cancel();
+    _userLocationSubscription = stream.listen(
+      (location) {
+        if (!mounted) return;
+        setState(() => _userLocation = location);
+      },
+      onError: (Object error) {
+        if (mounted) {
+          showSnakBar(
+            context,
+            'Error watching current location: $error',
+            isError: true,
+          );
+        }
+      },
+    );
   }
 
   Future<void> _centerAndZoomOnUser() async {
@@ -76,12 +117,30 @@ class _DroneMapViewState extends State<DroneMapView> {
           builder: (context, state) {
             if (state is DroneTrackingLoading ||
                 state is DroneTrackingInitial) {
+              if (_userLocation != null) {
+                return DroneMapContent(
+                  center: _userLocation!,
+                  path: const [],
+                  userLocation: _userLocation,
+                  mapController: _mapController,
+                  onMapReady: () {
+                    _mapReady = true;
+                    _mapController.move(_userLocation!, 16.5);
+                  },
+                  onCenterOnUser: _centerAndZoomOnUser,
+                );
+              }
               return const MapPlaceholder();
             }
 
             if (state is DroneTrackingActive) {
+              final dronePosition = LatLng(
+                state.location.lat,
+                state.location.lng,
+              );
               return DroneMapContent(
-                center: LatLng(state.location.lat, state.location.lng),
+                center: dronePosition,
+                dronePosition: dronePosition,
                 path: state.pathHistory
                     .map((l) => LatLng(l.lat, l.lng))
                     .toList(),
@@ -94,15 +153,31 @@ class _DroneMapViewState extends State<DroneMapView> {
 
             if (state is DroneTrackingDisconnected &&
                 state.lastKnownLocation != null) {
+              final dronePosition = LatLng(
+                state.lastKnownLocation!.lat,
+                state.lastKnownLocation!.lng,
+              );
               return DroneMapContent(
-                center: LatLng(
-                  state.lastKnownLocation!.lat,
-                  state.lastKnownLocation!.lng,
-                ),
+                center: dronePosition,
+                dronePosition: dronePosition,
                 path: const [],
                 userLocation: _userLocation,
                 mapController: _mapController,
                 onMapReady: () => _mapReady = true,
+                onCenterOnUser: _centerAndZoomOnUser,
+              );
+            }
+
+            if (_userLocation != null) {
+              return DroneMapContent(
+                center: _userLocation!,
+                path: const [],
+                userLocation: _userLocation,
+                mapController: _mapController,
+                onMapReady: () {
+                  _mapReady = true;
+                  _mapController.move(_userLocation!, 16.5);
+                },
                 onCenterOnUser: _centerAndZoomOnUser,
               );
             }

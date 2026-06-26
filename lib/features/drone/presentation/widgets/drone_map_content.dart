@@ -8,6 +8,7 @@ import 'map_markers.dart';
 
 class DroneMapContent extends StatelessWidget {
   final LatLng center;
+  final LatLng? dronePosition;
   final List<LatLng> path;
   final LatLng? userLocation;
   final MapController mapController;
@@ -17,6 +18,7 @@ class DroneMapContent extends StatelessWidget {
   const DroneMapContent({
     super.key,
     required this.center,
+    this.dronePosition,
     required this.path,
     this.userLocation,
     required this.mapController,
@@ -52,7 +54,7 @@ class DroneMapContent extends StatelessWidget {
                 ],
               ),
             MapMarkers(
-              dronePosition: center,
+              dronePosition: dronePosition,
               path: path,
               userLocation: userLocation,
             ),
