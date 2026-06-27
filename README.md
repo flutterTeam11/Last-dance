@@ -2,7 +2,7 @@
   <img src="assets/images/splash/Phoenix.svg" alt="Phoenix" width="120" />
 </p>
 
-<h1 align="center">Phoenix — Drone Search & Rescue System</h1>
+<h1 align="center">Phoenix —  earch & Rescue System</h1>
 
 <p align="center">
   <em>Real-time ground control station for AI-assisted drone search and rescue operations.</em>
