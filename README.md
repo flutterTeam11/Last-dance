@@ -23,13 +23,14 @@
 
 ## Overview
 
-Phoenix is a three-tier drone ground control system for search and rescue operations. A mobile application receives real-time video feeds, AI-powered human detection overlays, and live telemetry from a drone, enabling rescue teams to coordinate missions from the field.
+Phoenix is a four-tier drone ground control system for search and rescue operations. A mobile application receives real-time video feeds, AI-powered human detection overlays, and live telemetry from a drone, enabling rescue teams to coordinate missions from the field.
 
-The system comprises three components:
+The system comprises four components:
 
-- **Raspberry Pi (onboard the drone)** — Captures video and GPS data; streams video via TCP and syncs location via Firebase.
-- **Laptop Server** — FastAPI-based middleware that receives drone video, runs AI detection (YOLO), and broadcasts processed frames and detections to mobile clients over WebSockets.
-- **Flutter Mobile App** — The ground control interface with live video, interactive maps, drone telemetry, virtual joystick control, and mission management.
+- **Raspberry Pi (onboard the drone)** — Runs a FastAPI server for motor control via GPIO, sensor data (DHT11, gas sensors, IR), camera streaming over TCP, and GPS reporting to Firestore. Exposes WebSocket endpoints for real-time control.
+- **ESP32 (onboard the drone)** — Microcontroller handling sensor data collection and GPS location; communicates with the Laptop Server over serial (UART).
+- **Laptop Server** — FastAPI-based middleware that receives drone video (TCP from Pi), connects to ESP32 over serial for sensor/location data, runs AI detection (YOLO), syncs with Firebase, and broadcasts processed frames/detections to mobile clients over WebSockets.
+- **Flutter Mobile App** — The ground control interface with live video, interactive maps, drone telemetry, virtual joystick control, mission management, and Pi health monitoring.
 
 ---
 
@@ -52,9 +53,11 @@ The system comprises three components:
 | **Live Video Streaming** | Real-time video feed from the drone camera via WebSocket with Normal, Thermal, and AI Overlay modes |
 | **AI Human Detection** | YOLO-based object detection with bounding boxes, confidence scores, and system status labels rendered as a HUD overlay |
 | **GPS Tracking** | Real-time drone location tracking on OpenStreetMap with path history and user location |
-| **Telemetry Monitoring** | Battery level, altitude, speed, temperature, and human detection count displayed via circular indicators and stats bars |
+| **Telemetry Monitoring** | Battery level, altitude, speed, temperature, humidity, gas levels, and human detection count displayed via circular indicators and stats bars |
 | **Virtual Joystick** | Full-screen touch-based joystick for remote drone control (move, start/stop mission, land) |
-| **Mission Management** | Plan, start, and monitor rescue missions with status tracking |
+| **Mission Management** | Plan, start, and monitor rescue missions with status tracking — communicates directly with the Pi server over HTTP/WebSocket |
+| **Pi Health Monitoring** | Polls Raspberry Pi health status (motors, battery, temperature) with automatic offline detection after 3 consecutive failures |
+| **Motor Control Panel** | Individual motor start/stop controls with real-time status feedback from the Pi |
 | **Reports & Alerts** | Real-time incident reports (human detected, system overheated, mission complete) with timestamps |
 | **Authentication** | Email/password sign-up, sign-in, Google/Apple OAuth, password reset flow, and OTP verification |
 
@@ -64,7 +67,7 @@ The system comprises three components:
 |---------|-------------|
 | **Responsive UI** | Built with `flutter_screenutil` for adaptive layouts across phone and tablet sizes |
 | **Onboarding Flow** | 4-page animated carousel introducing the system to new users |
-| **Dark-first Theme** | Professional dark interface suitable for outdoor field operation |
+| **Light Theme** | Clean light interface with cyan/blue brand gradient, suitable for outdoor field readability |
 | **Animated Transitions** | Snackbar, page, and state transitions with smooth animations |
 
 ---
@@ -80,15 +83,16 @@ The system comprises three components:
 | **Navigation** | Declarative routing via `go_router` |
 | **DI** | Service locator pattern with `get_it` |
 | **Maps** | OpenStreetMap via `flutter_map` + `latlong2` |
-| **Video Streaming** | `web_socket_channel` (MJPEG over WebSocket) |
+| **Video Streaming** | `web_socket_channel` (MJPEG over WebSocket) + `flutter_vlc_player` |
 | **Authentication** | Firebase Auth + `google_sign_in` |
 | **Database** | Cloud Firestore (real-time streams) |
 | **Local Storage** | `shared_preferences` |
-| **HTTP Client** | `dio` (error handling / future API integration) |
+| **HTTP Client** | `dio` (Pi HTTP communication + error handling) |
+| **Location** | `geolocator` for user location services |
 | **Error Handling** | Functional `Either` type via `dartz` |
 | **SVG Rendering** | `flutter_svg` |
 
-### Backend Server
+### Backend Server (Laptop)
 
 | Category | Technology |
 |----------|-----------|
@@ -97,42 +101,77 @@ The system comprises three components:
 | **Video Processing** | OpenCV, NumPy, Pillow |
 | **AI Detection** | YOLO via custom detection pipeline (with dummy fallback) |
 | **Real-time** | WebSockets (video, detections, commands) |
-| **TCP Receiver** | Async socket server for drone video ingestion |
-| **Firebase** | Firebase Admin SDK (optional server-side ops) |
+| **TCP Receiver** | Async socket server for drone video ingestion (port 9000) |
+| **Serial Communication** | pyserial + pyserial-asyncio for ESP32 data (UART) |
+| **Firebase** | Firebase Admin SDK (server-side Firestore sync) |
 
-### Hardware (Drone)
+### Raspberry Pi (Onboard Drone)
 
 | Component | Role |
 |-----------|------|
-| **Raspberry Pi** | Onboard computer for GPS + camera + data relay |
-| **Camera Module** | Video capture for live streaming |
+| **FastAPI Server** | Motor control, sensor reading, camera streaming, WebSocket command relay |
+| **Stepper Motors** | Dual-motor control via GPIO (PUL/DIR/EN pins) with step/direction drivers |
+| **Camera Module** | Video capture for live streaming over TCP |
 | **GPS Module** | Real-time location reporting to Firestore |
+| **DHT11 Sensor** | Temperature and humidity monitoring |
+| **MQ-2 / MQ-8 Sensors** | Gas and smoke detection |
+| **IR Sensors** | Left/right obstacle detection |
+
+### ESP32 (Onboard Drone)
+
+| Component | Role |
+|-----------|------|
+| **UART Serial** | Communicates sensor data and GPS location to Laptop Server |
+| **Sensor Fusion** | Aggregates sensor readings and sends structured JSON over serial |
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────┐     TCP Video     ┌─────────────────────┐     WebSocket      ┌──────────────────────┐
-│                 │ ──────────────────▶│                     │ ──────────────────▶│                      │
-│  Raspberry Pi   │     Stream        │   FastAPI Server    │    Video + Detects  │   Flutter Mobile App │
-│  (Onboard)      │                   │   (Laptop)          │                     │   (Ground Control)   │
-│                 │◀──────────────────│                     │◀────────────────────│                      │
-│  - Camera       │     Commands      │   - AI Detection    │     Commands        │  - Live Video Feed   │
-│  - GPS Module   │     (Firestore)   │   - Thermal Analysis │                     │  - Map Tracking      │
-│  - Sensors      │                   │   - Frame Processing │                     │  - Telemetry Display │
-└─────────────────┘                   └─────────────────────┘                     │  - Joystick Control  │
-                                                                                  │  - Mission Manager   │
-                                                                                  └──────────────────────┘
+┌──────────────────┐     TCP Video      ┌────────────────────────┐     WebSocket      ┌──────────────────────┐
+│                  │ ───────────────────▶│                        │ ──────────────────▶│                      │
+│  Raspberry Pi    │     Stream          │   FastAPI Server       │    Video + Detects  │   Flutter Mobile App │
+│  (Onboard)       │                     │   (Laptop)             │                     │   (Ground Control)   │
+│                  │◄────────────────────│                        │◀────────────────────│                      │
+│  - Camera        │  HTTP / WS Control  │   - AI Detection       │        Commands     │  - Live Video Feed   │
+│  - Stepper Motor │                     │   - Thermal Analysis   │                     │  - Map Tracking      │
+│  - GPIO Sensors  │                     │   - Frame Processing   │                     │  - Telemetry Display │
+│  - Firestore     │                     │   - ESP32 Serial I/O   │                     │  - Joystick Control  │
+└──────────────────┘                     │   - Firebase Sync      │                     │  - Mission Manager   │
+        │                                └────────────────────────┘                     │  - Pi Health Monitor │
+        │ GPS/Sensors via UART                     ▲                                    └──────────────────────┘
+        ▼                                         │ Serial
+┌──────────────────┐                               │
+│     ESP32        │───────────────────────────────┘
+│  - GPS Module    │
+│  - Sensors       │
+└──────────────────┘
+
+┌──────────────────┐
+│   Raspberry Pi   │  (Separate HTTP Server on the Pi)
+│  FastAPI :8000   │
+│                  │  GET  /health              — Health check
+│                  │  GET  /sensors             — GPIO sensor readings
+│                  │  POST /move/{direction}    — Motor movement
+│                  │  POST /steps/{count}       — Step motors
+│                  │  WS   /ws/control          — Real-time control
+│                  │  WS   /ws/commands         — Mission commands
+│  Motor Server    │
+│  HTTP :5000      │  GET  /start  /stop  /status
+└──────────────────┘
 ```
 
 ### Data Flow
 
-1. **Drone → Firestore**: Raspberry Pi writes GPS location, telemetry (battery, height, speed, temperature), and status to Cloud Firestore in real-time.
-2. **Drone → Server**: Raspberry Pi streams MJPEG video frames over TCP (port 9000) to the laptop server.
-3. **Server → App (WebSocket)**: The server processes each frame (resize, AI detection, thermal analysis) and broadcasts the result over two WebSocket channels: `/ws/video` (JPEG bytes) and `/ws/detections` (JSON bounding boxes + thermal data).
-4. **App → Server (WebSocket)**: The mobile app sends commands (move, start_mission, stop_mission, land) over `/ws/commands`.
-5. **App ← Firestore**: The mobile app subscribes to Firestore stream snapshots for real-time drone location, status, and reports.
+1. **ESP32 → Laptop Server (Serial)**: ESP32 sends JSON frames over UART with sensor data (`sensor` type) and GPS location (`location` type).
+2. **Pi → Laptop Server (TCP)**: Raspberry Pi streams MJPEG video frames over TCP (port 9000).
+3. **Pi → Firestore**: Raspberry Pi writes GPS location, telemetry (battery, height, speed, temperature), and status to Cloud Firestore.
+4. **Laptop Server → App (WebSocket)**: The server processes each frame (resize, AI detection, thermal analysis) and broadcasts over `/ws/video` (JPEG bytes) and `/ws/detections` (JSON bounding boxes).
+5. **Laptop Server → Firestore**: Server writes ESP32 sensor data, location, and commands to Firestore via `LaptopFirebaseSync`.
+6. **App → Laptop Server (WebSocket)**: The mobile app sends commands (move, start_mission, stop_mission, land, set_speed) over `/ws/commands`.
+7. **App → Pi Server (HTTP)**: The mobile app directly polls Pi health (`/status`) and sends start/stop mission commands via `PiHttpClient`.
+8. **App ← Firestore**: The mobile app subscribes to Firestore stream snapshots for real-time drone location, status, and reports.
 
 ### Clean Architecture (Feature-First)
 
@@ -143,9 +182,11 @@ lib/
 │   ├── router/                    # GoRouter configuration
 │   ├── theme/                     # Colors, dimensions, ThemeData
 │   ├── websocket/                 # WS client + bridge + detection models
+│   ├── helper/                    # Utility helpers (snackbar)
 │   ├── error/                     # Failure classes
 │   ├── utils/                     # SharedPreferences, location utils
-│   └── widgets/                   # Shared UI components
+│   ├── widgets/                   # Shared UI components
+│   └── pi_http_client.dart        # HTTP client for Pi motor server
 └── features/                      # Feature modules
     ├── auth/                      # Auth flow (sign-up, sign-in, OTP, reset)
     ├── drone/                     # Main drone interface (video, map, telemetry, control)
@@ -175,27 +216,45 @@ graduatio_project/
 ├── macos/                          # Platform: macOS
 ├── windows/                        # Platform: Windows
 ├── assets/
+│   ├── diagrams/                   # Generated architecture diagrams (PPTX)
 │   ├── icons/                      # SVG icons (Google, Apple)
 │   ├── images/
 │   │   ├── onboarding/             # 4 onboarding illustrations
 │   │   └── splash/                 # App logo (Phoenix.svg)
 │   └── map/                        # Map placeholder assets
-├── laptop_server/                  # FastAPI backend
-│   ├── ai_integration/             # AI detection + pipeline
+├── laptop_server/                  # FastAPI backend (Laptop)
+│   ├── ai_integration/
 │   │   ├── detector.py             # YOLO detector (with dummy fallback)
 │   │   └── pipeline.py             # Frame processing pipeline
-│   ├── broadcast/                  # WebSocket manager
-│   │   └── ws_manager.py           # Client connection management
-│   ├── receivers/                  # TCP video receiver
+│   ├── broadcast/
+│   │   └── ws_manager.py           # WebSocket client connection management
+│   ├── receivers/
 │   │   └── tcp_receiver.py         # Async TCP server (port 9000)
 │   ├── config.py                   # Server configuration
+│   ├── esp32_interface.py          # Serial interface for ESP32 (sensors, GPS)
+│   ├── firebase_sync.py            # Laptop-side Firebase sync (LaptopFirebaseSync)
 │   ├── main.py                     # FastAPI entrypoint
 │   └── requirements.txt            # Python dependencies
+├── pi_server/                      # FastAPI backend (Raspberry Pi onboard)
+│   ├── camera_stream.py            # Camera capture + TCP video streaming
+│   ├── control.py                  # Keyboard control client (via WebSocket)
+│   ├── firebase_sync.py            # Pi-side Firebase sync (status, location, commands)
+│   ├── hardware.py                 # GPIO abstraction (stepper motors, sensor reads)
+│   ├── main.py                     # FastAPI entrypoint (port 8000)
+│   ├── motor_server.py             # Standalone HTTP motor control server (port 5000)
+│   └── service_account.json        # Firebase service account (not committed)
+├── tools/
+│   ├── install_pi_server_to_sd.sh  # Deploy pi_server to Raspberry Pi SD card
+│   ├── create_architecture_diagrams_pptx.py
+│   ├── create_architecture_diagrams.py
+│   ├── create_visual_english_presentation.py
+│   └── markdown_to_pptx.py
 ├── lib/                            # Flutter source
 │   ├── core/
 │   │   ├── di/service_locator.dart
 │   │   ├── error/failure.dart
 │   │   ├── helper/show_snak_bar.dart
+│   │   ├── pi_http_client.dart     # HTTP client for Pi motor server
 │   │   ├── router/app_router.dart
 │   │   ├── theme/
 │   │   │   ├── app_dimensions.dart
@@ -242,6 +301,10 @@ graduatio_project/
 │   │   │       │   ├── drone_status_state.dart
 │   │   │       │   ├── drone_tracking_cubit.dart
 │   │   │       │   ├── drone_tracking_state.dart
+│   │   │       │   ├── mission_cubit.dart
+│   │   │       │   ├── mission_state.dart
+│   │   │       │   ├── pi_health_cubit.dart
+│   │   │       │   ├── pi_health_state.dart
 │   │   │       │   ├── video_feed_cubit.dart
 │   │   │       │   └── video_feed_state.dart
 │   │   │       ├── screens/
@@ -267,6 +330,7 @@ graduatio_project/
 │   │   │           ├── map_screen_header.dart
 │   │   │           ├── mission_button.dart
 │   │   │           ├── mission_status_card.dart
+│   │   │           ├── motor_control_panel.dart
 │   │   │           ├── report_tile.dart
 │   │   │           ├── reports_section.dart
 │   │   │           ├── simulated_feed.dart
@@ -278,6 +342,8 @@ graduatio_project/
 │   │   │           └── virtual_joystick.dart
 │   │   ├── onboarding/
 │   │   │   ├── cubit/
+│   │   │   │   ├── onboarding_cubit.dart
+│   │   │   │   └── onboarding_state.dart
 │   │   │   ├── onboarding_data.dart
 │   │   │   └── onboarding_screen.dart
 │   │   └── splash/
@@ -300,6 +366,7 @@ graduatio_project/
 - Python 3.10+
 - A Firebase project with Authentication and Firestore enabled
 - Android Studio / Xcode (for device builds)
+- Raspberry Pi (for onboard drone server)
 
 ### Clone & Dependencies
 
@@ -310,10 +377,24 @@ cd phoenix-drone
 # Install Flutter dependencies
 flutter pub get
 
-# Install Python server dependencies
+# Install Laptop server Python dependencies
 cd laptop_server
 pip install -r requirements.txt
 cd ..
+```
+
+### Pi Server Dependencies
+
+On Raspberry Pi:
+
+```bash
+pip install fastapi uvicorn websockets opencv-python numpy firebase-admin
+
+# Optional: Motor control via GPIO
+# RPi.GPIO and gpiozero are pre-installed on Raspberry Pi OS
+
+# Optional: DHT11/22 sensor
+pip install adafruit-circuitpython-dht
 ```
 
 ---
@@ -333,6 +414,8 @@ flutterfire configure --project=your-firebase-project-id
 
 This generates `lib/firebase_options.dart` with your platform-specific Firebase credentials.
 
+6. Download a service account JSON from Firebase Console → Project Settings → Service Accounts and save it as `pi_server/service_account.json` for the Raspberry Pi (and optionally `laptop_server/service_account.json` for the laptop server).
+
 ### Firestore Data Schema
 
 ```
@@ -347,7 +430,9 @@ drone/                          # Root collection
 │   ├── height: double
 │   ├── speed: double
 │   ├── isConnected: bool
-│   └── temperature: double
+│   ├── temperature: double
+│   ├── humidity: double         (Laptop sync)
+│   └── gasLevel: int           (Laptop sync)
 ├── commands/                   # Document: outbound commands
 │   ├── command: string
 │   ├── data: map
@@ -370,36 +455,58 @@ users/                          # Root collection
 
 ## Environment Configuration
 
-The server IP address and WebSocket URLs are configured in `lib/core/di/service_locator.dart`. Update these values to match your network:
+### Flutter App
+
+The server IP addresses are configured in `lib/core/di/service_locator.dart`:
 
 ```dart
 // lib/core/di/service_locator.dart
-const String _serverIp = '192.168.1.10'; // Change to your server's IP
-const int _serverPort = 8000;
+// Pi HTTP server (motor control)
+getIt.registerLazySingleton<PiHttpClient>(
+  () => PiHttpClient(baseUrl: 'http://raspaberry.local:5000'),
+);
 
-final videoUrl = 'ws://$_serverIp:$_serverPort/ws/video';
-final detectionUrl = 'ws://$_serverIp:$_serverPort/ws/detections';
-final commandUrl = 'ws://$_serverIp:$_serverPort/ws/commands';
+// Pi WebSocket server (commands)
+getIt.registerLazySingleton<WsClient>(
+  () => WsClient(baseUrl: 'ws://raspaberry.local:8000'),
+);
 ```
 
-For production, consider moving configuration to environment variables or a config file.
+Update `raspaberry.local` to your Raspberry Pi's hostname or IP address. The laptop server WebSocket URLs are also configured in `WsClient`.
 
-### Server Configuration
+### Laptop Server Configuration
 
 ```python
 # laptop_server/config.py
-TCP_PORT = 9000           # Port for Pi video stream
+TCP_PORT = 9000           # Port for Pi video stream (TCP)
 WS_PORT = 8000            # Port for WebSocket server
 FRAME_WIDTH = 640         # Processing resolution
 FRAME_HEIGHT = 480
 JPEG_QUALITY = 75         # Compression quality
+FRAME_SKIP = 3            # Process every Nth frame for AI
+AI_MODEL_PATH = "models/yolov8n.pt"
+THERMAL_ENABLED = False
+ESP32_PORT = "/dev/ttyUSB0"
+ESP32_BAUD = 115200
+```
+
+### Pi Server Hardware
+
+```python
+# pi_server/hardware.py — GPIO pin mapping
+PUL1: GPIO 17    # Stepper motor 1 pulse
+DIR1: GPIO 27    # Stepper motor 1 direction
+EN1:  GPIO 22    # Stepper motor 1 enable
+PUL2: GPIO 23    # Stepper motor 2 pulse
+DIR2: GPIO 24    # Stepper motor 2 direction
+EN2:  GPIO 25    # Stepper motor 2 enable
 ```
 
 ---
 
 ## Running the Project
 
-### 1. Start the Backend Server
+### 1. Start the Backend Server (Laptop)
 
 ```bash
 cd laptop_server
@@ -407,12 +514,33 @@ python main.py
 ```
 
 The server starts on `http://0.0.0.0:8000` with:
-- `GET /health` — Health check endpoint
+- `GET /health` — Health check endpoint (server IP, connected clients, pipeline status, ESP32 status)
 - `WS /ws/video` — Video stream broadcast
 - `WS /ws/detections` — AI detection data broadcast
 - `WS /ws/commands` — Command reception from mobile
 
-### 2. Run the Flutter App
+### 2. Start the Pi Server (Raspberry Pi)
+
+```bash
+cd pi_server
+python main.py  # FastAPI server on port 8000
+
+# Optional: start the motor HTTP server separately
+python motor_server.py  # HTTP server on port 5000
+
+# Optional: start camera streaming
+python camera_stream.py
+```
+
+Pi server endpoints:
+- `GET /health` — Health check (HW status, Firebase sync)
+- `GET /sensors` — GPIO sensor readings (temperature, humidity, gas, IR)
+- `POST /move/{direction}` — Motor movement (forward/backward/left/right/stop)
+- `POST /steps/{count}` — Step motors N times
+- `WS /ws/control` — Real-time motor and sensor control
+- `WS /ws/commands` — Mission commands from mobile (move, start_mission)
+
+### 3. Run the Flutter App
 
 ```bash
 # For development
@@ -449,15 +577,17 @@ flutter build web --release
 
 ## State Management
 
-The project uses the **BLoC / Cubit** pattern from `flutter_bloc`. Five cubits manage distinct concerns:
+The project uses the **BLoC / Cubit** pattern from `flutter_bloc`. Seven cubits manage distinct concerns:
 
 | Cubit | Responsibility | States |
 |-------|---------------|--------|
 | `AuthCubit` | Authentication flow (sign-up, sign-in, OTP, password reset, Google OAuth) | `AuthInitial`, `AuthLoading`, `AuthSuccess`, `AuthFailureState`, `OtpSent`, `PasswordResetEmailSent` |
 | `OnboardingCubit` | Onboarding page navigation | `OnboardingState(currentPage)` |
 | `DroneTrackingCubit` | Real-time GPS location + path history via Firestore streams | `DroneTrackingInitial`, `Loading`, `Active`, `Disconnected` |
-| `DroneStatusCubit` | Telemetry data + incident reports | `DroneStatusInitial`, `DroneStatusLoaded` |
+| `DroneStatusCubit` | Telemetry data + incident reports + connection status | `DroneStatusInitial`, `DroneStatusLoaded` |
 | `VideoFeedCubit` | Video mode (normal/thermal/overlay) + fullscreen toggle | `VideoFeedState(mode, isFullscreen)` |
+| `MissionCubit` | Mission lifecycle (start/stop via Pi HTTP + WebSocket) | `MissionState(idle, starting, running, stopping, stopped, error, piOffline)` |
+| `PiHealthCubit` | Raspberry Pi health polling (motors, battery, temperature, online status) | `PiHealthState(isOnline, motorsRunning, battery, temperature, lastSeen)` |
 
 ### Pattern
 
@@ -465,18 +595,43 @@ The project uses the **BLoC / Cubit** pattern from `flutter_bloc`. Five cubits m
 - **Sealed state hierarchies** enable exhaustive pattern matching in `BlocBuilder`/`BlocSelector`/`BlocListener`.
 - **`MultiBlocProvider`** scopes cubits to the widget tree in `DroneMainShell`.
 - **`GetIt` service locator** registers cubits as `lazySingleton` or `factory` for dependency injection.
+- **`PiHealthCubit`** polls the Pi motor server every 5 seconds; marks Pi offline after 3 consecutive failures.
 
 ---
 
 ## API / Backend
 
-### WebSocket Endpoints
+### Laptop Server WebSocket Endpoints
 
 | Endpoint | Direction | Format | Description |
 |----------|-----------|--------|-------------|
 | `/ws/video` | Server → Client | Binary (JPEG bytes) | Processed video frames at ~15-30 FPS |
 | `/ws/detections` | Server → Client | JSON | AI detection results: bounding boxes, confidence, thermal data |
-| `/ws/commands` | Bidirectional | JSON | Mobile sends: `move`, `start_mission`, `stop_mission`, `land`. Server may acknowledge. |
+| `/ws/commands` | Bidirectional | JSON | Mobile sends: `move`, `start_mission`, `stop_mission`, `land`, `set_speed`. Server relays to ESP32. |
+
+### Pi Server WebSocket Endpoints
+
+| Endpoint | Direction | Format | Description |
+|----------|-----------|--------|-------------|
+| `/ws/control` | Bidirectional | JSON | Real-time motor control + sensor queries (`move`, `step`, `sensors`) |
+| `/ws/commands` | Bidirectional | JSON | Mission commands (`move` with x/y, `start_mission`) |
+
+### Pi Server HTTP Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Server health + hardware status |
+| `/sensors` | GET | Current sensor readings (temperature, humidity, gas, IR) |
+| `/move/{direction}` | POST | Motor movement (forward/backward/left/right/stop) |
+| `/steps/{count}` | POST | Execute N stepper motor steps |
+
+### Motor Server HTTP Endpoints (port 5000)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/start` | GET | Start motors moving forward |
+| `/stop` | GET | Stop motors |
+| `/status` | GET | Motor running status + health |
 
 ### Detection JSON Format
 
@@ -500,17 +655,49 @@ The project uses the **BLoC / Cubit** pattern from `flutter_bloc`. Five cubits m
 }
 ```
 
-### Server Processing Pipeline
+### ESP32 Serial Protocol (JSON over UART)
+
+ESP32 → Laptop (sensor data):
+```json
+{"type": "sensor", "temperature": 28.5, "humidity": 55, "battery": 85, "gas": 120}
+```
+
+ESP32 → Laptop (location):
+```json
+{"type": "location", "lat": 30.0444, "lng": 31.2357}
+```
+
+Laptop → ESP32 (commands):
+```json
+{"type": "command", "command": "move", "data": {"x": 0.5, "y": -0.3}}
+```
+
+### Laptop Server Processing Pipeline
 
 ```
-TCP Receiver (port 9000) → Frame Queue → Pipeline (resize + detect + encode) → Output Queue → Broadcaster → WS Clients
+TCP Receiver (port 9000) → Frame Queue
+                                     ↘
+                               Pipeline (resize + AI detect + encode)
+                                     ↗
+ESP32 (serial) → Sensor/Location Data
+                                     ↘
+                               Output Queue → Broadcaster → WS Clients
 ```
 
-### Health Check
+### Health Checks
 
 ```bash
+# Laptop server
 curl http://localhost:8000/health
-# {"status": "healthy", "clients": {"video": 1, "detection": 1, "command": 0}}
+# {"status":"ok","server_ip":"192.168.x.x","tcp_port":9000,"ws_port":8000,...}
+
+# Pi server
+curl http://raspberrypi.local:8000/health
+# {"status":"ok","running":false,"hw_ok":true,"fb_sync":true}
+
+# Pi motor server
+curl http://raspberrypi.local:5000/status
+# {"motors_running":false}
 ```
 
 ---
@@ -534,6 +721,26 @@ Key decisions:
 - **Bottom navigation** and **control overlays** adapt to safe areas on notched devices.
 - **The map** fills available space using `Expanded` with status bars overlaid.
 - **Video preview** maintains 16:9 aspect ratio with `AspectRatio` widget.
+- **Motor Control Panel** and **Pi Health status** only appear when the Pi is online.
+
+---
+
+## Pi Server Installation (SD Card)
+
+An automated deployment script is available at `tools/install_pi_server_to_sd.sh`:
+
+```bash
+# 1. Insert Raspberry Pi SD card into your Linux machine
+# 2. Run the deployment script with sudo
+sudo bash tools/install_pi_server_to_sd.sh
+
+# 3. The script installs:
+#    - pi_server/ files to /home/beso/pi_server on the rootfs
+#    - systemd service (phoenix-pi-server.service) for auto-start on boot
+#    - WiFi configuration (iPhone hotspot by default)
+```
+
+Edit the script to customize WiFi SSID/password, Pi hostname, or service configuration before running.
 
 ---
 
@@ -545,7 +752,8 @@ Key decisions:
 | **State Updates** | Cubit `BlocSelector` for granular rebuilds; `Equatable` prevents unnecessary notifications |
 | **Firestore Streams** | Single-document listeners (not collection scans) with server timestamps |
 | **Map Rendering** | `flutter_map` with OpenStreetMap raster tiles (no WebGL overhead); polyline path uses simplified coordinate set |
-| **AI Detection** | Server-side YOLO processing; only detection metadata (no full frames) sent as JSON |
+| **AI Detection** | Server-side YOLO processing; `FRAME_SKIP=3` skips every 2 out of 3 frames to reduce CPU load |
+| **Pi Health Polling** | 5-second interval with 3-failure tolerance avoids flaky disconnects |
 | **Asset Loading** | SVG images with in-memory caching via `flutter_svg` |
 | **Widget Tree** | Minimal rebuilds via `const` constructors and `BlocBuilder` granularity |
 | **Disconnect Handling** | 10-second timeout timer in `DroneTrackingCubit` — avoids brief network blips triggering disconnected states |
@@ -559,7 +767,10 @@ Key decisions:
 - [x] Live video streaming with mode switching
 - [x] AI human detection overlay
 - [x] Virtual joystick drone control
-- [ ] Raspberry Pi hardware implementation & integration
+- [x] Pi health monitoring and motor control
+- [x] ESP32 serial communication (sensors + GPS)
+- [x] Raspberry Pi server with GPIO motor control
+- [x] Dual-server architecture (Pi onboard + Laptop middleware)
 - [ ] YOLO model fine-tuning for aerial SAR datasets
 - [ ] Offline mode with cached map tiles
 - [ ] Multi-drone support (fleet management)
